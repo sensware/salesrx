@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SalesRx — Walk in prepared</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161c26; --panel2:#1c2432; --border:#2a3446;
+    --text:#e8edf4; --muted:#8b98ab; --accent:#34d399; --accent-dim:#10b981;
+    --accent2:#60a5fa; --warn:#fbbf24; --danger:#f87171; --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.5;}
+  .app{max-width:860px;margin:0 auto;padding:20px 16px 60px;}
+  header.top{display:flex;align-items:center;justify-content:space-between;padding:6px 0 22px;}
+  .logo{font-size:20px;font-weight:800;letter-spacing:-.5px;}
+  .logo span{color:var(--accent);}
+  .logo small{display:block;font-size:11px;font-weight:500;color:var(--muted);letter-spacing:0;}
+  .stepper{display:flex;gap:6px;font-size:11px;color:var(--muted);}
+  .stepper .dot{width:26px;height:26px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;}
+  .stepper .dot.active{background:var(--accent);color:#06281c;border-color:var(--accent);}
+  .stepper .dot.done{border-color:var(--accent);color:var(--accent);}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:16px;}
+  h1{font-size:22px;letter-spacing:-.4px;margin-bottom:4px;}
+  h2{font-size:15px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .sub{color:var(--muted);font-size:13.5px;margin-bottom:18px;}
+  label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:14px 0 5px;text-transform:uppercase;letter-spacing:.5px;}
+  input,select,textarea{width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:10px 12px;font-size:14px;font-family:inherit;}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;}
+  @media(max-width:560px){.row{grid-template-columns:1fr;}}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#06281c;border:none;border-radius:10px;padding:12px 22px;font-size:14px;font-weight:700;cursor:pointer;margin-top:20px;}
+  .btn:hover{filter:brightness(1.1);}
+  .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text);font-weight:600;}
+  .btn.small{padding:8px 14px;font-size:13px;margin-top:0;}
+  .screen{display:none;}
+  .screen.visible{display:block;animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .tip{display:flex;gap:10px;padding:12px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;font-size:13.5px;}
+  .tip .ico{flex:0 0 auto;}
+  .tag{display:inline-block;background:var(--panel2);border:1px solid var(--border);border-radius:999px;padding:3px 10px;font-size:12px;color:var(--muted);margin:0 6px 6px 0;}
+  .tag.green{color:var(--accent);border-color:rgba(52,211,153,.4);}
+  .tag.blue{color:var(--accent2);border-color:rgba(96,165,250,.4);}
+  .tag.amber{color:var(--warn);border-color:rgba(251,191,36,.4);}
+  /* loading */
+  .loader{list-style:none;margin-top:14px;}
+  .loader li{display:flex;align-items:center;gap:10px;padding:9px 0;color:var(--muted);font-size:14px;opacity:.35;transition:opacity .3s;}
+  .loader li.on{opacity:1;color:var(--text);}
+  .loader li.done .spin{display:none;}
+  .loader li .check{display:none;color:var(--accent);font-weight:700;}
+  .loader li.done .check{display:inline;}
+  .spin{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:rot .8s linear infinite;display:none;}
+  .loader li.on:not(.done) .spin{display:inline-block;}
+  @keyframes rot{to{transform:rotate(360deg);}}
+  /* brief */
+  .brief-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;}
+  .score{min-width:110px;text-align:center;background:var(--panel2);border:1px solid rgba(52,211,153,.4);border-radius:12px;padding:10px 14px;}
+  .score b{font-size:26px;color:var(--accent);display:block;line-height:1.1;}
+  .score span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .sig{border-left:3px solid var(--accent);padding:8px 12px;margin-bottom:10px;background:var(--panel2);border-radius:0 9px 9px 0;font-size:13.5px;}
+  .sig.warn{border-left-color:var(--warn);}
+  .sig.info{border-left-color:var(--accent2);}
+  .sig .when{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .person{display:flex;gap:12px;padding:12px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;}
+  .avatar{flex:0 0 42px;width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-weight:800;color:#06281c;font-size:15px;}
+  .person b{font-size:14px;}
+  .person .role{font-size:12px;color:var(--muted);}
+  .person .note{font-size:13px;margin-top:4px;}
+  .role-chip{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:middle;text-transform:uppercase;letter-spacing:.4px;}
+  .role-chip.buyer{background:rgba(96,165,250,.15);color:var(--accent2);}
+  .role-chip.champ{background:rgba(52,211,153,.15);color:var(--accent);}
+  .role-chip.block{background:rgba(248,113,113,.15);color:var(--danger);}
+  .qa{margin-bottom:12px;font-size:13.5px;}
+  .qa .q{font-weight:600;color:var(--warn);}
+  .qa .a{color:var(--muted);margin-top:3px;}
+  .qa .a b{color:var(--text);}
+  ol.disc{padding-left:20px;font-size:13.5px;}
+  ol.disc li{margin-bottom:8px;}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
+  .footer-note{text-align:center;color:var(--muted);font-size:12px;margin-top:26px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+  .watch{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:13.5px;}
+  .watch:last-child{border-bottom:none;}
+  .pulse{width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;margin-right:8px;animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="logo">Sales<span>Rx</span><small>walk in prepared</small></div>
+    <div class="stepper">
+      <div class="dot" id="dot1">1</div><div class="dot" id="dot2">2</div><div class="dot" id="dot3">3</div>
+    </div>
+  </header>
+
+  <!-- ══════════ SCREEN 1 · REP PROFILE ══════════ -->
+  <section class="screen" id="s-profile">
+    <div class="card">
+      <h1>Your rep profile</h1>
+      <p class="sub">Tell SalesRx who you are and what you sell. Every prospect brief is personalized to your edge.</p>
+      <div class="row">
+        <div><label>Industry</label><input id="p-industry" placeholder="e.g. SaaS, Medical devices" value="SaaS"></div>
+        <div><label>Vertical / niche</label><input id="p-vertical" placeholder="e.g. Logistics tech" value="Supply-chain visibility"></div>
+        <div><label>Product type</label><input id="p-product" placeholder="e.g. Analytics platform" value="Real-time shipment tracking platform"></div>
+        <div><label>Location / territory</label><input id="p-location" placeholder="e.g. DACH region" value="Northeast US"></div>
+      </div>
+      <label>Main competitors (comma-separated)</label>
+      <input id="p-competitors" placeholder="e.g. project44, FourKites" value="project44, FourKites">
+      <label>Your differentiator / moat</label>
+      <textarea id="p-moat" rows="2">Only platform with carrier-level ETA accuracy guarantees and 48-hour onboarding.</textarea>
+      <button class="btn" onclick="genTips()">Generate my coaching tips →</button>
+      <div id="tips" style="display:none;margin-top:22px;">
+        <h2>💡 AI coaching for your positioning</h2>
+        <div id="tips-list"></div>
+        <button class="btn" onclick="go('s-search',2)">Continue to prospect research →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ SCREEN 2 · PROSPECT INPUT ══════════ -->
+  <section class="screen" id="s-search">
+    <div class="card">
+      <h1>Research a prospect</h1>
+      <p class="sub">Enter what you know — SalesRx fills in the rest.</p>
+      <div class="row">
+        <div><label>Company name</label><input id="t-name" placeholder="e.g. Meridian Foods" value="Meridian Foods"></div>
+        <div><label>Domain (optional)</label><input id="t-domain" placeholder="meridianfoods.com" value="meridianfoods.com"></div>
+        <div><label>HQ / branch location</label><input id="t-loc" placeholder="e.g. Boston, MA" value="Boston, MA"></div>
+        <div><label>Contact to build rapport with (optional)</label><input id="t-contact" placeholder="e.g. Dana Whitfield" value="Dana Whitfield"></div>
+      </div>
+      <button class="btn" onclick="research()">🔎 Research prospect</button>
+    </div>
+    <div class="card">
+      <h2><span class="pulse"></span>Your watchlist</h2>
+      <div class="watch"><span>Northstar Retail Group</span><span class="tag amber">New CFO announced</span></div>
+      <div class="watch"><span>Halloway Logistics</span><span class="tag green">Raised Series B · $40M</span></div>
+      <div class="watch"><span>Crestline Manufacturing</span><span class="tag blue">Hiring supply-chain analysts</span></div>
+    </div>
+  </section>
+
+  <!-- ══════════ LOADING ══════════ -->
+  <section class="screen" id="s-loading">
+    <div class="card">
+      <h1 id="load-title">Researching…</h1>
+      <p class="sub">Scanning public signals and building your brief.</p>
+      <ul class="loader" id="loader">
+        <li><span class="spin"></span><span class="check">✓</span> Company profile &amp; firmographics</li>
+        <li><span class="spin"></span><span class="check">✓</span> News, funding &amp; strategy shifts</li>
+        <li><span class="spin"></span><span class="check">✓</span> Tech &amp; vendor stack detection</li>
+        <li><span class="spin"></span><span class="check">✓</span> Org changes &amp; key decision makers</li>
+        <li><span class="spin"></span><span class="check">✓</span> Rapport intel on your contact</li>
+        <li><span class="spin"></span><span class="check">✓</span> Matching against your profile &amp; win stories</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ══════════ SCREEN 3 · PROSPECT BRIEF ══════════ -->
+  <section class="screen" id="s-brief">
+    <div class="card">
+      <div class="brief-head">
+        <div>
+          <h1 id="b-name">—</h1>
+          <p class="sub" id="b-meta" style="margin-bottom:8px;">—</p>
+          <div id="b-tags"></div>
+        </div>
+        <div class="score"><b id="b-score">—</b><span>Fit score</span></div>
+      </div>
+      <p style="font-size:13.5px;color:var(--muted);margin-top:8px;" id="b-summary"></p>
+    </div>
+
+    <div class="card">
+      <h2>📡 Buying signals &amp; recent changes</h2>
+      <div id="b-signals"></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h2>🧰 Current stack &amp; incumbent</h2>
+        <div id="b-stack"></div>
+        <p style="font-size:13px;color:var(--muted);margin-top:10px;" id="b-stack-note"></p>
+      </div>
+      <div class="card">
+        <h2>⚠️ Likely challenges</h2>
+        <div id="b-challenges"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🧠 Pain points → NEPQ question ladders</h2>
+      <p class="sub" style="margin-bottom:14px;">Each detected pain point is mapped to a Neuro-Emotional Persuasion Questioning sequence. Ask in order, with a calm, curious tone — let the prospect state the pain and its cost in their own words.</p>
+      <div id="b-nepq"></div>
+    </div>
+
+    <div class="card">
+      <h2>🗺️ Decision map</h2>
+      <div id="b-people"></div>
+    </div>
+
+    <div class="card" id="b-rapport-card">
+      <h2>🤝 Rapport dossier</h2>
+      <div id="b-rapport"></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h2>🛡️ Objection forecast</h2>
+        <div id="b-objections"></div>
+      </div>
+      <div class="card">
+        <h2>❓ Discovery questions to ask</h2>
+        <ol class="disc" id="b-questions"></ol>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🏆 Win story to cite</h2>
+      <p style="font-size:13.5px;" id="b-winstory"></p>
+    </div>
+
+    <div class="card">
+      <h2>⚡ Next actions</h2>
+      <div class="actions">
+        <button class="btn small">📄 Export battle card</button>
+        <button class="btn small ghost">📅 Auto-brief before meeting</button>
+        <button class="btn small ghost">🔔 Add to watchlist</button>
+        <button class="btn small ghost">↗ Sync to CRM</button>
+      </div>
+      <div style="margin-top:16px;"><button class="btn ghost small" onclick="go('s-search',2)">← Research another prospect</button></div>
+    </div>
+    <p class="footer-note">Prototype — all prospect data is simulated. Production version pulls live signals from news, filings, job boards &amp; tech-stack detection.</p>
+  </section>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+function go(screen, step){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('visible'));
+  $(screen).classList.add('visible');
+  [1,2,3].forEach(n=>{
+    const d=$('dot'+n);
+    d.classList.toggle('active', n===step);
+    d.classList.toggle('done', n<step);
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+go('s-profile',1);
+
+/* ─── Screen 1: coaching tips ─── */
+function genTips(){
+  const moat=$('p-moat').value||'your differentiator';
+  const comp=($('p-competitors').value||'competitors').split(',')[0].trim();
+  const vert=$('p-vertical').value||'your vertical';
+  const tips=[
+    ['🎯', `Lead with the outcome, not the feature: reframe “${moat.replace(/\.$/,'')}” as the cost of NOT having it — e.g. quantify what a missed ETA costs a ${vert.toLowerCase()} buyer per quarter.`],
+    ['🥊', `Prospects will benchmark you against ${comp}. Build a one-line “why switch” answer now — you'll be asked in the first 10 minutes.`],
+    ['📍', `In ${$('p-location').value||'your territory'}, reference local logos and regional case studies; proximity builds trust faster than product claims.`],
+    ['🔁', `Your 48-hour onboarding claim is a risk-reversal tool. Use it to counter “switching is painful,” not as a headline feature.`],
+    ['🗣️', `Publish 2–3 short posts on ${vert.toLowerCase()} pain points before outreach — prospects check your profile before replying.`]
+  ];
+  $('tips-list').innerHTML = tips.map(t=>`<div class="tip"><span class="ico">${t[0]}</span><span>${t[1]}</span></div>`).join('');
+  $('tips').style.display='block';
+  $('tips').scrollIntoView({behavior:'smooth'});
+}
+
+/* ─── Screen 2 → loading → brief ─── */
+function research(){
+  const name=$('t-name').value.trim()||'Acme Corp';
+  $('load-title').textContent=`Researching ${name}…`;
+  go('s-loading',2);
+  const items=[...document.querySelectorAll('#loader li')];
+  items.forEach(li=>li.classList.remove('on','done'));
+  let i=0;
+  const step=()=>{
+    if(i>0) items[i-1].classList.add('done');
+    if(i<items.length){ items[i].classList.add('on'); i++; setTimeout(step, 620); }
+    else setTimeout(()=>{ buildBrief(); go('s-brief',3); }, 350);
+  };
+  step();
+}
+
+function buildBrief(){
+  const name=$('t-name').value.trim()||'Acme Corp';
+  const domain=$('t-domain').value.trim()|| name.toLowerCase().replace(/[^a-z]/g,'')+'.com';
+  const loc=$('t-loc').value.trim()||'Boston, MA';
+  const contact=$('t-contact').value.trim();
+  const comps=($('p-competitors').value||'a competitor').split(',').map(s=>s.trim()).filter(Boolean);
+  const incumbent=comps[0]||'a legacy vendor';
+  const moat=$('p-moat').value||'your differentiator';
+
+  $('b-name').textContent=name;
+  $('b-meta').textContent=`${domain} · HQ ${loc} · Food & beverage distribution · ~1,200 employees · est. $480M revenue`;
+  $('b-tags').innerHTML=`<span class="tag green">Active buying window</span><span class="tag blue">Mid-market</span><span class="tag amber">Incumbent: ${incumbent}</span>`;
+  $('b-score').textContent='82';
+  $('b-summary').textContent=`${name} matches your best-fit customer profile: mid-market, multi-site distribution, visible supply-chain pain, and an incumbent contract likely up for renewal. Timing signals suggest engaging within 2–3 weeks.`;
+
+  $('b-signals').innerHTML=`
+    <div class="sig"><span class="when">2 weeks ago</span><br><b>New VP of Supply Chain hired</b> — Marcus Chen, ex-Sysco. New leaders re-evaluate vendors in their first 90 days.</div>
+    <div class="sig warn"><span class="when">1 month ago</span><br><b>Earnings call flagged “visibility gaps”</b> — CEO cited late-delivery penalties costing ~$2.1M last fiscal year.</div>
+    <div class="sig info"><span class="when">6 weeks ago</span><br><b>Opened new distribution center</b> near Hartford, CT — inside your territory; multi-site rollouts favor fast onboarding.</div>
+    <div class="sig info"><span class="when">Ongoing</span><br><b>Hiring 3 supply-chain analysts</b> — job posts mention “${incumbent}” admin experience, confirming the incumbent stack.</div>`;
+
+  $('b-stack').innerHTML=[incumbent+' (visibility — renewal est. Q4)','SAP S/4HANA (ERP)','Samsara (fleet telematics)','Snowflake (data warehouse)'].map(s=>`<span class="tag">${s}</span>`).join('');
+  $('b-stack-note').textContent=`Displacement angle: ${incumbent} users commonly cite ETA accuracy and slow rollout — exactly where "${moat.replace(/\.$/,'')}" lands.`;
+
+  $('b-challenges').innerHTML=['Late-delivery penalties from top retail customers','No unified view across 7 distribution centers','Data team stretched — needs low-lift integration','Contract renewal decision expected Q4'].map(c=>`<div class="tip"><span class="ico">•</span><span>${c}</span></div>`).join('');
+
+  const nepq=[
+    {pain:`Late-delivery penalties (~$2.1M/yr) from top retail customers`,
+     ladder:[
+      ['Situation',`How are you currently tracking shipments once they leave a DC — is that all inside ${incumbent}?`],
+      ['Problem awareness',`When an ETA slips, how do you find out today — before the customer does, or after?`],
+      ['Consequence',`If the penalty trend continues into peak season, what does that do to the margins on your top retail accounts — and to your team's standing internally?`],
+      ['Solution awareness',`Suppose you could see carrier-level ETA drift 12 hours earlier — what would your team do differently with that window?`]]},
+    {pain:`No unified visibility across 7 distribution centers (new Hartford DC compounds it)`,
+     ladder:[
+      ['Situation',`Walk me through how the Hartford DC is being brought onto your current visibility setup — same rollout as the other six?`],
+      ['Problem awareness',`Where do the views between DCs disagree most — inventory in transit, dock scheduling, or ETAs?`],
+      ['Consequence',`What happens to a customer order that crosses two DCs when those views don't match? Who eats that cost?`],
+      ['Solution awareness',`If all seven sites shared one live view, which decision would you stop escalating to Marcus's office?`]]},
+    {pain:`Stretched data team → integration fatigue and fear of another long rollout`,
+     ladder:[
+      ['Situation',`How long did your last vendor rollout take end-to-end, and who carried it?`],
+      ['Problem awareness',`What did that rollout displace — what didn't the data team ship while it was happening?`],
+      ['Consequence',`If the Q4 renewal decision defaults to “too busy to switch,” what does that lock you into for another 3 years?`],
+      ['Solution awareness',`If onboarding took 48 hours instead of months, does the renewal conversation change from “can we afford to switch” to “can we afford not to”?`]]}
+  ];
+  $('b-nepq').innerHTML = nepq.map((p,i)=>`
+    <div style="background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;">
+      <div style="font-weight:700;font-size:14px;margin-bottom:10px;">🔥 Pain ${i+1}: ${p.pain}</div>
+      ${p.ladder.map(s=>`<div class="qa" style="margin-bottom:9px;"><div class="q" style="color:var(--accent2);font-size:11px;text-transform:uppercase;letter-spacing:.5px;">${s[0]}</div><div style="font-size:13.5px;">“${s[1]}”</div></div>`).join('')}
+    </div>`).join('') +
+    `<div class="tip"><span class="ico">🎙️</span><span><b>Tone check:</b> NEPQ works when you sound neutral and curious, not eager. Pause after consequence questions — silence is where the prospect persuades themselves.</span></div>`;
+
+  $('b-people').innerHTML=`
+    <div class="person"><div class="avatar">MC</div><div><b>Marcus Chen</b><span class="role-chip buyer">Economic buyer</span><div class="role">VP Supply Chain · joined 2 wks ago</div><div class="note">New in seat, mandate to fix visibility. Prioritize him — 90-day window.</div></div></div>
+    <div class="person"><div class="avatar">${contact?contact.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase():'DW'}</div><div><b>${contact||'Dana Whitfield'}</b><span class="role-chip champ">Likely champion</span><div class="role">Director of Logistics Ops · 4 yrs at ${name}</div><div class="note">Feels the daily pain; 2 mutual connections can make a warm intro (Sarah Kim — your former client at Halloway).</div></div></div>
+    <div class="person"><div class="avatar">RP</div><div><b>Rajiv Patel</b><span class="role-chip block">Potential blocker</span><div class="role">IT Director</div><div class="note">Owns the ${incumbent} relationship. Neutralize early: emphasize 48-hr onboarding = low IT lift.</div></div></div>`;
+
+  $('b-rapport').innerHTML = contact ? `
+    <div class="tip"><span class="ico">💬</span><span><b>Recent activity:</b> posted last week about peak-season readiness — comment thoughtfully before your call.</span></div>
+    <div class="tip"><span class="ico">🎓</span><span><b>Common ground:</b> Penn State supply-chain program; spoke at the Northeast Logistics Summit (you attended 2025).</span></div>
+    <div class="tip"><span class="ico">🔗</span><span><b>Warm path:</b> Sarah Kim (Halloway) worked with ${contact} 2019–2021 and can introduce you.</span></div>
+    <div class="tip"><span class="ico">☕</span><span><b>Opener:</b> ask how the new Hartford DC launch affected their peak-season planning — relevant, flattering, and leads straight to your value prop.</span></div>`
+    : `<p style="font-size:13.5px;color:var(--muted);">Add a contact name on the research screen to unlock rapport intel.</p>`;
+
+  $('b-objections').innerHTML=`
+    <div class="qa"><div class="q">“We already use ${incumbent}.”</div><div class="a"><b>Response:</b> “That's exactly why teams talk to us — where does its ETA accuracy break down for you today?” Then quantify their $2.1M penalty exposure.</div></div>
+    <div class="qa"><div class="q">“Switching is too disruptive.”</div><div class="a"><b>Response:</b> Lead with the 48-hour onboarding guarantee and offer a single-DC pilot at the new Hartford site.</div></div>
+    <div class="qa"><div class="q">“No budget until next year.”</div><div class="a"><b>Response:</b> Reframe: penalties are already a budget line. A Q4 renewal decision means evaluation must start now.</div></div>`;
+
+  $('b-questions').innerHTML=[
+    `How are late-delivery penalties trending since the earnings call flagged $2.1M last year?`,
+    `What does Marcus Chen's 90-day plan prioritize — and who's scoring the current vendors?`,
+    `How is the new Hartford DC being onboarded onto ${incumbent}, and how long did the last rollout take?`,
+    `If ETA accuracy improved 20%, which customer relationship would that save first?`
+  ].map(q=>`<li>${q}</li>`).join('');
+
+  $('b-winstory').innerHTML=`<b>Halloway Logistics</b> (also mid-market F&B distribution, 5 DCs, former ${incumbent} customer) cut late-delivery penalties <b>38% in two quarters</b> after switching. Same vertical, same incumbent, same territory — ask Sarah Kim to be a reference call.`;
+}
+</script>
+</body>
+</html>
