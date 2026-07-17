@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SalesRx — Brand Guidelines v1.0</title>
+<style>
+  :root{
+    /* ── Core palette ── */
+    --navy:#0B1F3A;      /* Command Navy — authority, seriousness */
+    --navy-deep:#061224; /* Midnight — depth, focus */
+    --crimson:#C8102E;   /* Valor Red — courage, decisive action */
+    --crimson-dark:#8E0C21;
+    --steel:#41586E;     /* Steel — discipline, competence */
+    --gold:#D9A441;      /* Medal Gold — earned wins (sparingly) */
+    --paper:#F4F6F8;     /* Off-white — clarity */
+    --slate:#8A97A6;     /* Slate — secondary text */
+    --ink:#0D1319;       /* Ink — body text on light */
+    --line:#22344E;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--navy-deep);color:var(--paper);line-height:1.6;}
+  .wrap{max-width:960px;margin:0 auto;padding:48px 24px 100px;}
+  .kicker{color:var(--crimson);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:2.5px;}
+  h1{font-size:44px;font-weight:900;letter-spacing:-1.5px;line-height:1.1;margin:10px 0 8px;}
+  h1 .rx{color:var(--crimson);}
+  h2{font-size:22px;font-weight:800;letter-spacing:-.4px;margin:64px 0 6px;padding-top:24px;border-top:1px solid var(--line);}
+  h3{font-size:15px;font-weight:700;margin:26px 0 10px;}
+  p.lead{color:var(--slate);font-size:16px;max-width:640px;}
+  p{color:#c3ccd6;font-size:14.5px;max-width:680px;margin-bottom:10px;}
+  .grid{display:grid;gap:16px;margin-top:18px;}
+  .g2{grid-template-columns:repeat(2,1fr);}
+  .g3{grid-template-columns:repeat(3,1fr);}
+  .g4{grid-template-columns:repeat(4,1fr);}
+  @media(max-width:720px){.g2,.g3,.g4{grid-template-columns:1fr 1fr;}}
+  .swatch{border-radius:12px;overflow:hidden;border:1px solid var(--line);}
+  .swatch .chip{height:110px;display:flex;align-items:flex-end;padding:12px;}
+  .swatch .meta{background:#0d1a2e;padding:12px 14px;font-size:12px;}
+  .swatch .meta b{display:block;font-size:13.5px;margin-bottom:2px;}
+  .swatch .meta code{color:var(--slate);font-family:ui-monospace,Menlo,monospace;font-size:11.5px;}
+  .swatch .meta .why{color:var(--slate);display:block;margin-top:6px;line-height:1.45;}
+  .ratio{display:flex;height:34px;border-radius:8px;overflow:hidden;margin-top:14px;border:1px solid var(--line);font-size:10.5px;font-weight:700;}
+  .ratio div{display:flex;align-items:center;justify-content:center;}
+  .card{background:#0d1a2e;border:1px solid var(--line);border-radius:14px;padding:22px;}
+  .logo-tile{background:#0d1a2e;border:1px solid var(--line);border-radius:14px;padding:26px;display:flex;flex-direction:column;gap:14px;align-items:center;}
+  .logo-tile.light{background:var(--paper);}
+  .logo-tile .cap{font-size:12px;color:var(--slate);text-align:center;line-height:1.5;}
+  .logo-tile.light .cap{color:#5a6675;}
+  .type-sample{border:1px solid var(--line);border-radius:12px;padding:20px;background:#0d1a2e;margin-top:10px;}
+  .type-sample .label{font-size:11px;color:var(--slate);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;}
+  table{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px;}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);}
+  th{color:var(--slate);font-size:11px;text-transform:uppercase;letter-spacing:1px;}
+  td code{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--gold);}
+  .dodont{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px;}
+  @media(max-width:720px){.dodont{grid-template-columns:1fr;}}
+  .do,.dont{border-radius:12px;padding:16px 18px;font-size:13.5px;}
+  .do{background:rgba(217,164,65,.06);border:1px solid rgba(217,164,65,.35);}
+  .dont{background:rgba(200,16,46,.06);border:1px solid rgba(200,16,46,.35);}
+  .do b{color:var(--gold);} .dont b{color:var(--crimson);}
+  .do ul,.dont ul{padding-left:18px;margin-top:8px;color:#c3ccd6;}
+  .do li,.dont li{margin-bottom:6px;}
+  .btn-demo{display:inline-block;padding:12px 26px;border-radius:8px;font-weight:800;font-size:14px;letter-spacing:.2px;margin:6px 8px 0 0;}
+  .voice{border-left:3px solid var(--crimson);padding:10px 16px;background:#0d1a2e;border-radius:0 10px 10px 0;margin:10px 0;font-size:14px;}
+  .voice .no{color:var(--slate);text-decoration:line-through;display:block;font-size:13px;}
+  .voice .yes{display:block;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">Brand Guidelines · v1.0 · 2026</div>
+  <h1>Sales<span class="rx">Rx</span></h1>
+  <p class="lead">Walk in already knowing. SalesRx arms sales reps with intelligence before every meeting — the brand must feel like what it delivers: <strong style="color:var(--paper)">strength, courage, and seriousness.</strong> A briefing room, not a party.</p>
+
+  <!-- ═══════════ POSITIONING ═══════════ -->
+  <h2>1 · Brand idea</h2>
+  <p><strong style="color:var(--paper)">The rep's corner team.</strong> Like a fighter's corner: it studies the opponent, knows your strengths, and hands you the game plan before the bell. Every design decision should pass one test: <em>does this make a rep feel more prepared and more confident walking into a room?</em></p>
+  <h3>Brand attributes</h3>
+  <p><strong style="color:var(--paper)">Strong</strong> — grounded, stable, never flimsy. <strong style="color:var(--paper)">Courageous</strong> — decisive accents, direct language, no hedging. <strong style="color:var(--paper)">Serious</strong> — restrained, precise, data-first; confidence without noise.</p>
+
+  <!-- ═══════════ COLOR ═══════════ -->
+  <h2>2 · Color system</h2>
+  <p>The palette is built on documented color psychology: deep navy signals authority, competence and calm control (the "navy suit" effect); red signals courage, energy and decisive action; restrained gold signals achievement. Dark, low-saturation grounds keep the tone serious — bright accents are earned, not decorative.</p>
+
+  <div class="grid g3">
+    <div class="swatch"><div class="chip" style="background:#0B1F3A"></div><div class="meta"><b>Command Navy</b><code>#0B1F3A · RGB 11 31 58</code><span class="why">Primary. Authority &amp; seriousness — the brand's spine. Dominant surface color.</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#061224"></div><div class="meta"><b>Midnight</b><code>#061224 · RGB 6 18 36</code><span class="why">App background / depth layer. Focus of a war room before the lights come up.</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#C8102E"></div><div class="meta"><b>Valor Red</b><code>#C8102E · RGB 200 16 46</code><span class="why">Courage. THE action color — primary buttons, key signals, the "Rx". Never decorative.</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#41586E"></div><div class="meta"><b>Steel</b><code>#41586E · RGB 65 88 110</code><span class="why">Discipline. Secondary UI, borders, charts, inactive states.</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#D9A441"></div><div class="meta"><b>Medal Gold</b><code>#D9A441 · RGB 217 164 65</code><span class="why">Earned wins: fit scores, milestones, confirmations. ≤5% of any screen.</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#F4F6F8"></div><div class="meta"><b>Paper</b><code>#F4F6F8 · RGB 244 246 248</code><span class="why">Clarity. Text on dark, light-mode surfaces, documents.</span></div></div>
+  </div>
+
+  <h3>Usage ratio — 60 / 25 / 10 / 5</h3>
+  <div class="ratio">
+    <div style="flex:60;background:#0B1F3A;color:#F4F6F8">Navy 60%</div>
+    <div style="flex:25;background:#41586E;color:#F4F6F8">Steel 25%</div>
+    <div style="flex:10;background:#C8102E;color:#fff">Red 10%</div>
+    <div style="flex:5;background:#D9A441;color:#061224">5%</div>
+  </div>
+  <p style="margin-top:10px">Red loses its courage when overused — one primary action per view. Gold marks results, never navigation. Both accents must always sit on navy/midnight grounds, never on each other.</p>
+
+  <h3>Accessibility</h3>
+  <p>Paper on Command Navy: 13.8:1 ✓ · Paper on Valor Red: 5.9:1 ✓ · Midnight on Medal Gold: 8.6:1 ✓. Never set Valor Red text on navy at sizes under 18px (3.4:1) — use it for fills and large display only.</p>
+
+  <!-- ═══════════ LOGO ═══════════ -->
+  <h2>3 · Logo concepts</h2>
+  <p>Three directions, all built to feel strong and serious. Each is shown as a vector concept — pick one and we refine weights, spacing and favicon cuts.</p>
+
+  <div class="grid g3">
+    <div class="logo-tile">
+      <svg width="120" height="140" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
+        <path d="M60 6 L110 24 V70 C110 104 88 124 60 134 C32 124 10 104 10 70 V24 Z" fill="#0B1F3A" stroke="#41586E" stroke-width="3"/>
+        <text x="60" y="82" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="52" fill="#F4F6F8">R<tspan fill="#C8102E">x</tspan></text>
+        <path d="M30 108 L60 120 L90 108" fill="none" stroke="#D9A441" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <div class="cap"><b style="color:#F4F6F8">A · The Shield</b><br>Rx inside a shield: preparation as protection. Strong, institutional, instantly serious. Best if selling to enterprise.</div>
+    </div>
+
+    <div class="logo-tile">
+      <svg width="150" height="140" viewBox="0 0 150 140" xmlns="http://www.w3.org/2000/svg">
+        <g transform="translate(15,20)">
+          <path d="M0 100 L40 60 L0 20 L20 0 L80 60 L20 120 Z" fill="#C8102E" transform="scale(0.83)"/>
+          <path d="M40 100 L80 60 L40 20 L60 0 L120 60 L60 120 Z" fill="#0B1F3A" stroke="#41586E" stroke-width="2" transform="scale(0.83)"/>
+        </g>
+        <circle cx="122" cy="30" r="6" fill="#D9A441"/>
+      </svg>
+      <div class="cap"><b style="color:#F4F6F8">B · The Advance</b><br>Double chevron driving forward — momentum and courage. Red leads, navy follows in force. Reads at 16px favicon size.</div>
+    </div>
+
+    <div class="logo-tile light">
+      <svg width="190" height="140" viewBox="0 0 190 140" xmlns="http://www.w3.org/2000/svg">
+        <text x="10" y="80" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="44" letter-spacing="-2" fill="#0B1F3A">SALES</text>
+        <text x="10" y="122" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="44" letter-spacing="-2" fill="#C8102E">RX<tspan fill="#0B1F3A" font-size="44">.</tspan></text>
+        <rect x="152" y="88" width="28" height="7" fill="#D9A441"/>
+        <rect x="152" y="102" width="18" height="7" fill="#41586E"/>
+        <rect x="152" y="116" width="8" height="7" fill="#41586E"/>
+      </svg>
+      <div class="cap"><b style="color:#0D1319">C · The Block</b><br>Stacked heavyweight wordmark with signal bars — blunt, typographic, modern. Strong on decks and merch; needs a separate favicon glyph.</div>
+    </div>
+  </div>
+
+  <h3>Clear space &amp; minimums</h3>
+  <p>Clear space around the mark = height of the "R". Minimum sizes: shield 24px, chevron 16px, wordmark 90px wide. On photos, always place the mark on a navy scrim — never raw on imagery.</p>
+
+  <!-- ═══════════ TYPOGRAPHY ═══════════ -->
+  <h2>4 · Typography</h2>
+  <p>One family, many weights: <strong style="color:var(--paper)">Inter</strong> (free, variable, excellent at small data sizes). Weight — not color — carries hierarchy: 900 for display, 700 for headings, 400–500 for body. Numerals in briefs use tabular figures.</p>
+  <div class="type-sample"><div class="label">Display · Inter 900 · -2% tracking</div><div style="font-weight:900;font-size:34px;letter-spacing:-1px;line-height:1.1;">Walk in already knowing.</div></div>
+  <div class="type-sample"><div class="label">Heading · Inter 700</div><div style="font-weight:700;font-size:20px;">Buying signals &amp; recent changes</div></div>
+  <div class="type-sample"><div class="label">Body · Inter 400 · 14.5/1.6</div><div style="font-size:14.5px;color:#c3ccd6;">Meridian Foods matches your best-fit profile: mid-market, multi-site distribution, and an incumbent contract likely up for renewal within two quarters.</div></div>
+  <div class="type-sample"><div class="label">Data · Inter 600 tabular / mono for codes</div><div style="font-weight:600;font-size:26px;font-variant-numeric:tabular-nums;">82<span style="color:var(--slate);font-size:13px;font-weight:400"> /100 fit score</span></div></div>
+
+  <!-- ═══════════ UI TOKENS ═══════════ -->
+  <h2>5 · Design tokens</h2>
+  <p>Drop-in CSS variables for the app (replaces the current green/teal prototype palette):</p>
+  <table>
+    <tr><th>Token</th><th>Value</th><th>Use</th></tr>
+    <tr><td><code>--bg</code></td><td>#061224</td><td>App background</td></tr>
+    <tr><td><code>--panel</code></td><td>#0B1F3A</td><td>Cards</td></tr>
+    <tr><td><code>--panel2</code></td><td>#122A47</td><td>Inputs, nested surfaces</td></tr>
+    <tr><td><code>--border</code></td><td>#22344E</td><td>Hairlines</td></tr>
+    <tr><td><code>--text</code></td><td>#F4F6F8</td><td>Primary text</td></tr>
+    <tr><td><code>--muted</code></td><td>#8A97A6</td><td>Secondary text</td></tr>
+    <tr><td><code>--accent</code></td><td>#C8102E</td><td>Primary actions, alerts</td></tr>
+    <tr><td><code>--accent-2</code></td><td>#41586E</td><td>Secondary UI</td></tr>
+    <tr><td><code>--win</code></td><td>#D9A441</td><td>Scores, achievements</td></tr>
+    <tr><td><code>--radius</code></td><td>10px</td><td>Sharper than consumer apps — serious, not soft</td></tr>
+  </table>
+
+  <h3>Buttons</h3>
+  <span class="btn-demo" style="background:#C8102E;color:#fff;">Research prospect</span>
+  <span class="btn-demo" style="background:transparent;color:#F4F6F8;border:1.5px solid #41586E;">Secondary action</span>
+  <span class="btn-demo" style="background:#D9A441;color:#061224;">✓ Brief ready</span>
+
+  <!-- ═══════════ VOICE ═══════════ -->
+  <h2>6 · Voice &amp; tone</h2>
+  <p>Like a trusted corner coach: direct, brief, specific, calm under pressure. Never hype, never hedge.</p>
+  <div class="voice"><span class="no">We think there might possibly be some interesting signals worth exploring! 🎉</span><span class="yes">Three signals this week. The strongest: their VP of Supply Chain left Monday.</span></div>
+  <div class="voice"><span class="no">Our revolutionary AI-powered next-gen platform leverages cutting-edge technology…</span><span class="yes">You'll know their stack, their pain, and your opening question — before you park the car.</span></div>
+  <div class="voice"><span class="no">Oops! Something went wrong somewhere :(</span><span class="yes">Research failed: calendar feed unreachable. Check CALENDAR_ICS_URL and retry.</span></div>
+
+  <!-- ═══════════ DO / DON'T ═══════════ -->
+  <h2>7 · Rules of engagement</h2>
+  <div class="dodont">
+    <div class="do"><b>DO</b><ul>
+      <li>Keep red for the one action that matters on each screen</li>
+      <li>Use navy depth (not drop shadows) to layer surfaces</li>
+      <li>Cite sources next to every claim — precision is the brand</li>
+      <li>Use gold only when the rep gained something (score, win, alert confirmed)</li>
+      <li>Write button labels as verbs: "Research", "Prep brief", "Sync"</li>
+    </ul></div>
+    <div class="dont"><b>DON'T</b><ul>
+      <li>No gradients on brand marks; flat fills only</li>
+      <li>No emoji in headings or CTAs (fine in docs/changelogs)</li>
+      <li>No red-on-gold or gold-on-red combinations, ever</li>
+      <li>No rounded "friendly" blob shapes — geometry stays angular</li>
+      <li>No exclamation points in product copy</li>
+    </ul></div>
+  </div>
+
+  <p style="margin-top:60px;color:var(--slate);font-size:12px;border-top:1px solid var(--line);padding-top:18px;">SalesRx Brand Guidelines v1.0 · July 2026 · Logo concepts are working drafts for direction-setting; final marks to be refined from the chosen direction.</p>
+</div>
+</body>
+</html>
