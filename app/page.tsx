@@ -237,8 +237,15 @@ export default function Home() {
     <div className="app">
       <header className="top">
         <div className="logo">
-          Sales<span>Rx</span>
-          <small>walk in prepared</small>
+          <svg width="34" height="22" viewBox="0 0 100 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <polygon points="0,0 20,0 52,32 20,64 0,64 32,32" fill="#0E8C55" />
+            <polygon points="36,0 56,0 88,32 56,64 36,64 68,32" fill="#F4F6F8" />
+            <circle cx="93" cy="7" r="5" fill="#D9A441" />
+          </svg>
+          <div>
+            Sales<span>Rx</span>
+            <small>walk in prepared</small>
+          </div>
         </div>
         <div className="stepper">
           {[1, 2, 3].map((n) => (

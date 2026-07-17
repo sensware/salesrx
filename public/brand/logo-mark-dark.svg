@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 64" width="100" height="64">
+  <!-- SalesRx "The Advance" mark — for dark (navy/midnight) backgrounds -->
+  <polygon points="0,0 20,0 52,32 20,64 0,64 32,32" fill="#0E8C55"/>
+  <polygon points="36,0 56,0 88,32 56,64 36,64 68,32" fill="#F4F6F8"/>
+  <circle cx="93" cy="7" r="5" fill="#D9A441"/>
+</svg>

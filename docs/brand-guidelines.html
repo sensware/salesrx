@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SalesRx — Brand Guidelines v1.0</title>
+<title>SalesRx — Brand Guidelines v1.1</title>
 <style>
   :root{
     /* ── Core palette ── */
     --navy:#0B1F3A;      /* Command Navy — authority, seriousness */
     --navy-deep:#061224; /* Midnight — depth, focus */
-    --crimson:#C8102E;   /* Valor Red — courage, decisive action */
+    --green:#0E8C55;     /* Vanguard Green — courage as GO: action, growth */
+    --crimson:#C8102E;   /* Valor Red — reserved: warnings only */
     --crimson-dark:#8E0C21;
     --steel:#41586E;     /* Steel — discipline, competence */
     --gold:#D9A441;      /* Medal Gold — earned wins (sparingly) */
@@ -21,9 +22,9 @@
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--navy-deep);color:var(--paper);line-height:1.6;}
   .wrap{max-width:960px;margin:0 auto;padding:48px 24px 100px;}
-  .kicker{color:var(--crimson);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:2.5px;}
+  .kicker{color:var(--green);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:2.5px;}
   h1{font-size:44px;font-weight:900;letter-spacing:-1.5px;line-height:1.1;margin:10px 0 8px;}
-  h1 .rx{color:var(--crimson);}
+  h1 .rx{color:var(--green);}
   h2{font-size:22px;font-weight:800;letter-spacing:-.4px;margin:64px 0 6px;padding-top:24px;border-top:1px solid var(--line);}
   h3{font-size:15px;font-weight:700;margin:26px 0 10px;}
   p.lead{color:var(--slate);font-size:16px;max-width:640px;}
@@ -61,7 +62,7 @@
   .do ul,.dont ul{padding-left:18px;margin-top:8px;color:#c3ccd6;}
   .do li,.dont li{margin-bottom:6px;}
   .btn-demo{display:inline-block;padding:12px 26px;border-radius:8px;font-weight:800;font-size:14px;letter-spacing:.2px;margin:6px 8px 0 0;}
-  .voice{border-left:3px solid var(--crimson);padding:10px 16px;background:#0d1a2e;border-radius:0 10px 10px 0;margin:10px 0;font-size:14px;}
+  .voice{border-left:3px solid var(--green);padding:10px 16px;background:#0d1a2e;border-radius:0 10px 10px 0;margin:10px 0;font-size:14px;}
   .voice .no{color:var(--slate);text-decoration:line-through;display:block;font-size:13px;}
   .voice .yes{display:block;font-weight:600;}
 </style>
@@ -69,7 +70,7 @@
 <body>
 <div class="wrap">
 
-  <div class="kicker">Brand Guidelines · v1.0 · 2026</div>
+  <div class="kicker">Brand Guidelines · v1.1 · 2026</div>
   <h1>Sales<span class="rx">Rx</span></h1>
   <p class="lead">Walk in already knowing. SalesRx arms sales reps with intelligence before every meeting — the brand must feel like what it delivers: <strong style="color:var(--paper)">strength, courage, and seriousness.</strong> A briefing room, not a party.</p>
 
@@ -81,14 +82,15 @@
 
   <!-- ═══════════ COLOR ═══════════ -->
   <h2>2 · Color system</h2>
-  <p>The palette is built on documented color psychology: deep navy signals authority, competence and calm control (the "navy suit" effect); red signals courage, energy and decisive action; restrained gold signals achievement. Dark, low-saturation grounds keep the tone serious — bright accents are earned, not decorative.</p>
+  <p>The palette is built on documented color psychology: deep navy signals authority, competence and calm control (the "navy suit" effect); deep emerald green signals GO — growth, money, decisive forward motion (courage without the alarm-bell baggage red carries in software); restrained gold signals achievement. Red is reserved exclusively for warnings. Dark, low-saturation grounds keep the tone serious — bright accents are earned, not decorative.</p>
 
   <div class="grid g3">
     <div class="swatch"><div class="chip" style="background:#0B1F3A"></div><div class="meta"><b>Command Navy</b><code>#0B1F3A · RGB 11 31 58</code><span class="why">Primary. Authority &amp; seriousness — the brand's spine. Dominant surface color.</span></div></div>
     <div class="swatch"><div class="chip" style="background:#061224"></div><div class="meta"><b>Midnight</b><code>#061224 · RGB 6 18 36</code><span class="why">App background / depth layer. Focus of a war room before the lights come up.</span></div></div>
-    <div class="swatch"><div class="chip" style="background:#C8102E"></div><div class="meta"><b>Valor Red</b><code>#C8102E · RGB 200 16 46</code><span class="why">Courage. THE action color — primary buttons, key signals, the "Rx". Never decorative.</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#0E8C55"></div><div class="meta"><b>Vanguard Green</b><code>#0E8C55 · RGB 14 140 85</code><span class="why">Courage as GO. THE action color — primary buttons, positive signals, the "Rx". Deep emerald, never mint.</span></div></div>
     <div class="swatch"><div class="chip" style="background:#41586E"></div><div class="meta"><b>Steel</b><code>#41586E · RGB 65 88 110</code><span class="why">Discipline. Secondary UI, borders, charts, inactive states.</span></div></div>
     <div class="swatch"><div class="chip" style="background:#D9A441"></div><div class="meta"><b>Medal Gold</b><code>#D9A441 · RGB 217 164 65</code><span class="why">Earned wins: fit scores, milestones, confirmations. ≤5% of any screen.</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#C8102E"></div><div class="meta"><b>Valor Red</b><code>#C8102E · RGB 200 16 46</code><span class="why">Reserved. Warnings, risk signals, destructive actions only — scarcity keeps it loud.</span></div></div>
     <div class="swatch"><div class="chip" style="background:#F4F6F8"></div><div class="meta"><b>Paper</b><code>#F4F6F8 · RGB 244 246 248</code><span class="why">Clarity. Text on dark, light-mode surfaces, documents.</span></div></div>
   </div>
 
@@ -96,17 +98,17 @@
   <div class="ratio">
     <div style="flex:60;background:#0B1F3A;color:#F4F6F8">Navy 60%</div>
     <div style="flex:25;background:#41586E;color:#F4F6F8">Steel 25%</div>
-    <div style="flex:10;background:#C8102E;color:#fff">Red 10%</div>
+    <div style="flex:10;background:#0E8C55;color:#fff">Green 10%</div>
     <div style="flex:5;background:#D9A441;color:#061224">5%</div>
   </div>
-  <p style="margin-top:10px">Red loses its courage when overused — one primary action per view. Gold marks results, never navigation. Both accents must always sit on navy/midnight grounds, never on each other.</p>
+  <p style="margin-top:10px">Green loses its authority when overused — one primary action per view. Red appears only when something needs attention; gold marks results, never navigation. Both accents must always sit on navy/midnight grounds, never on each other.</p>
 
   <h3>Accessibility</h3>
-  <p>Paper on Command Navy: 13.8:1 ✓ · Paper on Valor Red: 5.9:1 ✓ · Midnight on Medal Gold: 8.6:1 ✓. Never set Valor Red text on navy at sizes under 18px (3.4:1) — use it for fills and large display only.</p>
+  <p>Paper on Command Navy: 13.8:1 ✓ · White on Vanguard Green: 4.7:1 ✓ · Paper on Valor Red: 5.9:1 ✓ · Midnight on Medal Gold: 8.6:1 ✓. For small green text on dark grounds use the bright tint #3DDC97, not #0E8C55. Red and green fills never sit adjacent (colorblind safety) — separate with navy or paper.</p>
 
   <!-- ═══════════ LOGO ═══════════ -->
   <h2>3 · Logo concepts</h2>
-  <p>Three directions, all built to feel strong and serious. Each is shown as a vector concept — pick one and we refine weights, spacing and favicon cuts.</p>
+  <p><strong style="color:var(--green)">Direction B — The Advance — is the selected mark (v1.1).</strong> Double chevron driving forward: green leads the charge, paper/navy follows in force, one gold point of achievement. Concepts A and C are archived below for reference.</p>
 
   <div class="grid g3">
     <div class="logo-tile">
@@ -121,18 +123,18 @@
     <div class="logo-tile">
       <svg width="150" height="140" viewBox="0 0 150 140" xmlns="http://www.w3.org/2000/svg">
         <g transform="translate(15,20)">
-          <path d="M0 100 L40 60 L0 20 L20 0 L80 60 L20 120 Z" fill="#C8102E" transform="scale(0.83)"/>
+          <path d="M0 100 L40 60 L0 20 L20 0 L80 60 L20 120 Z" fill="#0E8C55" transform="scale(0.83)"/>
           <path d="M40 100 L80 60 L40 20 L60 0 L120 60 L60 120 Z" fill="#0B1F3A" stroke="#41586E" stroke-width="2" transform="scale(0.83)"/>
         </g>
         <circle cx="122" cy="30" r="6" fill="#D9A441"/>
       </svg>
-      <div class="cap"><b style="color:#F4F6F8">B · The Advance</b><br>Double chevron driving forward — momentum and courage. Red leads, navy follows in force. Reads at 16px favicon size.</div>
+      <div class="cap"><b style="color:#D9A441">B · The Advance ✓ SELECTED</b><br>Final asset set in <code style="font-family:monospace">public/brand/</code>: mark + lockup, dark/light variants, favicon. Reads at 16px.</div>
     </div>
 
     <div class="logo-tile light">
       <svg width="190" height="140" viewBox="0 0 190 140" xmlns="http://www.w3.org/2000/svg">
         <text x="10" y="80" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="44" letter-spacing="-2" fill="#0B1F3A">SALES</text>
-        <text x="10" y="122" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="44" letter-spacing="-2" fill="#C8102E">RX<tspan fill="#0B1F3A" font-size="44">.</tspan></text>
+        <text x="10" y="122" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="44" letter-spacing="-2" fill="#0E8C55">RX<tspan fill="#0B1F3A" font-size="44">.</tspan></text>
         <rect x="152" y="88" width="28" height="7" fill="#D9A441"/>
         <rect x="152" y="102" width="18" height="7" fill="#41586E"/>
         <rect x="152" y="116" width="8" height="7" fill="#41586E"/>
@@ -163,14 +165,16 @@
     <tr><td><code>--border</code></td><td>#22344E</td><td>Hairlines</td></tr>
     <tr><td><code>--text</code></td><td>#F4F6F8</td><td>Primary text</td></tr>
     <tr><td><code>--muted</code></td><td>#8A97A6</td><td>Secondary text</td></tr>
-    <tr><td><code>--accent</code></td><td>#C8102E</td><td>Primary actions, alerts</td></tr>
+    <tr><td><code>--accent</code></td><td>#0E8C55</td><td>Primary actions (green = go)</td></tr>
+    <tr><td><code>--accent-bright</code></td><td>#3DDC97</td><td>Small green text on dark</td></tr>
+    <tr><td><code>--alert</code></td><td>#C8102E</td><td>Warnings, destructive actions only</td></tr>
     <tr><td><code>--accent-2</code></td><td>#41586E</td><td>Secondary UI</td></tr>
     <tr><td><code>--win</code></td><td>#D9A441</td><td>Scores, achievements</td></tr>
     <tr><td><code>--radius</code></td><td>10px</td><td>Sharper than consumer apps — serious, not soft</td></tr>
   </table>
 
   <h3>Buttons</h3>
-  <span class="btn-demo" style="background:#C8102E;color:#fff;">Research prospect</span>
+  <span class="btn-demo" style="background:#0E8C55;color:#fff;">Research prospect</span>
   <span class="btn-demo" style="background:transparent;color:#F4F6F8;border:1.5px solid #41586E;">Secondary action</span>
   <span class="btn-demo" style="background:#D9A441;color:#061224;">✓ Brief ready</span>
 
@@ -185,7 +189,8 @@
   <h2>7 · Rules of engagement</h2>
   <div class="dodont">
     <div class="do"><b>DO</b><ul>
-      <li>Keep red for the one action that matters on each screen</li>
+      <li>Keep green for the one action that matters on each screen</li>
+      <li>Use red only when something demands attention (warnings, destructive actions)</li>
       <li>Use navy depth (not drop shadows) to layer surfaces</li>
       <li>Cite sources next to every claim — precision is the brand</li>
       <li>Use gold only when the rep gained something (score, win, alert confirmed)</li>
@@ -194,13 +199,13 @@
     <div class="dont"><b>DON'T</b><ul>
       <li>No gradients on brand marks; flat fills only</li>
       <li>No emoji in headings or CTAs (fine in docs/changelogs)</li>
-      <li>No red-on-gold or gold-on-red combinations, ever</li>
+      <li>No green-on-gold, red-on-green, or gold-on-red combinations, ever</li>
       <li>No rounded "friendly" blob shapes — geometry stays angular</li>
       <li>No exclamation points in product copy</li>
     </ul></div>
   </div>
 
-  <p style="margin-top:60px;color:var(--slate);font-size:12px;border-top:1px solid var(--line);padding-top:18px;">SalesRx Brand Guidelines v1.0 · July 2026 · Logo concepts are working drafts for direction-setting; final marks to be refined from the chosen direction.</p>
+  <p style="margin-top:60px;color:var(--slate);font-size:12px;border-top:1px solid var(--line);padding-top:18px;">SalesRx Brand Guidelines v1.1 · July 2026 · Logo concepts are working drafts for direction-setting; final marks to be refined from the chosen direction.</p>
 </div>
 </body>
 </html>
