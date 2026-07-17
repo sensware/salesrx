@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runResearch } from "@/lib/research";
+import { getCtx, unauthorized } from "@/lib/auth";
 import type { ProspectInput, RepProfile } from "@/lib/types";
 
 export const maxDuration = 300; // research can take a while
 
 export async function POST(req: NextRequest) {
+  const ctx = await getCtx(req);
+  if (!ctx) return unauthorized();
+
   let body: { profile: RepProfile; prospect: ProspectInput };
   try {
     body = await req.json();
@@ -20,7 +24,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const result = await runResearch(profile, prospect);
+    const result = await runResearch(profile, prospect, ctx.workspaceId);
     return NextResponse.json(result);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Research failed";

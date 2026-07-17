@@ -6,24 +6,29 @@ import { getOrCreateAccount, updateAccount, memoryToPromptBlock } from "./accoun
 import { cacheGet, cacheSet } from "./cache";
 import type { Brief, ProspectInput, RepProfile } from "./types";
 
-export function briefCacheKey(profile: RepProfile, prospect: ProspectInput): string {
-  return `brief:${prospect.name}|${prospect.domain}|${prospect.contact}|${profile?.moat}`;
+export function briefCacheKey(
+  profile: RepProfile,
+  prospect: ProspectInput,
+  workspaceId: string
+): string {
+  return `brief:${workspaceId}|${prospect.name}|${prospect.domain}|${prospect.contact}|${profile?.moat}`;
 }
 
 export async function runResearch(
   profile: RepProfile,
-  prospect: ProspectInput
+  prospect: ProspectInput,
+  workspaceId = "local"
 ): Promise<{ brief: Brief; cached: boolean }> {
-  const cacheKey = briefCacheKey(profile, prospect);
-  const cached = cacheGet<Brief>(cacheKey);
+  const cacheKey = briefCacheKey(profile, prospect, workspaceId);
+  const cached = await cacheGet<Brief>(cacheKey);
   if (cached) return { brief: cached, cached: true };
 
   // v1.1: structured hiring + technographic signals (optional, key-gated)
   const structured = await getStructuredSignals(prospect);
   const structuredBlock = structured ? signalsToPromptBlock(structured) : undefined;
 
-  // v1.2: account memory — past meetings make the next brief smarter
-  const account = getOrCreateAccount(prospect.name, prospect.domain);
+  // v1.2/v2.0: workspace-shared account memory
+  const account = await getOrCreateAccount(prospect.name, prospect.domain, workspaceId);
   const memoryBlock = memoryToPromptBlock(account);
 
   const anthropic = client();
@@ -41,11 +46,11 @@ export async function runResearch(
   });
 
   const brief = extractJson<Brief>(textOf(msg));
-  cacheSet(cacheKey, brief);
+  await cacheSet(cacheKey, brief);
 
   account.briefsRun += 1;
   account.lastBriefAt = new Date().toISOString();
-  updateAccount(account);
+  await updateAccount(account, workspaceId);
 
   return { brief, cached: false };
 }

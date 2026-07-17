@@ -1,46 +1,59 @@
 import { NextResponse } from "next/server";
-import { getUpcomingMeetings } from "@/lib/calendar";
-import { loadProfile } from "@/lib/profile";
+import { getUpcomingMeetings, type CalendarMeeting } from "@/lib/calendar";
+import { googleUpcomingMeetings } from "@/lib/gcal";
+import { loadProfile, profileUserIds } from "@/lib/profile";
+import { getGoogleToken } from "@/lib/auth";
+import { pgEnabled, db } from "@/lib/db";
 import { runResearch } from "@/lib/research";
 
 export const maxDuration = 300;
 
 /**
- * Auto-brief: pre-generates briefs for external meetings in the next 24h so
- * they're cached and instant when the rep opens SalesRx before the meeting.
- * Cron this nightly/hourly: curl -X POST http://localhost:3000/api/calendar/autoprep
+ * Auto-brief: pre-generates briefs for external meetings in the next 24h.
+ * Cron-friendly (no auth needed — it only warms caches). In multi-user mode it
+ * sweeps every user that has a saved profile, using their Google calendar if
+ * connected (ICS feed as the shared fallback).
  */
 export async function POST() {
-  if (!process.env.CALENDAR_ICS_URL) {
-    return NextResponse.json({ prepped: [], configured: false });
-  }
-  const profile = loadProfile();
-  if (!profile) {
-    return NextResponse.json(
-      { error: "No rep profile saved yet — open the app and save your profile first" },
-      { status: 400 }
-    );
-  }
+  const prepped: { user: string; domain: string; cached: boolean }[] = [];
+  let meetingsSeen = 0;
 
-  try {
-    const meetings = await getUpcomingMeetings(1); // next 24 hours
+  for (const userId of await profileUserIds()) {
+    const profile = await loadProfile(userId);
+    if (!profile) continue;
+
+    let workspaceId = "local";
+    if (pgEnabled()) {
+      const p = await db();
+      const r = await p.query("SELECT workspace_id FROM users WHERE id=$1", [userId]);
+      workspaceId = r.rows[0]?.workspace_id || "local";
+    }
+
+    let meetings: CalendarMeeting[] = [];
+    try {
+      const refresh = await getGoogleToken(userId);
+      if (refresh) meetings = await googleUpcomingMeetings(refresh, 1);
+      else if (process.env.CALENDAR_ICS_URL) meetings = await getUpcomingMeetings(1);
+    } catch (e) {
+      console.warn(`autoprep calendar fetch failed for ${userId}:`, e);
+      continue;
+    }
+    meetingsSeen += meetings.length;
+
     const domains = [...new Set(meetings.flatMap((m) => m.domains))];
-    const prepped: { domain: string; cached: boolean }[] = [];
-
     for (const domain of domains) {
       try {
-        const { cached } = await runResearch(profile, {
-          name: domain.split(".")[0],
-          domain,
-        });
-        prepped.push({ domain, cached });
+        const { cached } = await runResearch(
+          profile,
+          { name: domain.split(".")[0], domain },
+          workspaceId
+        );
+        prepped.push({ user: userId, domain, cached });
       } catch (e) {
         console.warn(`autoprep failed for ${domain}:`, e);
       }
     }
-    return NextResponse.json({ prepped, meetings: meetings.length });
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Autoprep failed";
-    return NextResponse.json({ error: message }, { status: 500 });
   }
+
+  return NextResponse.json({ prepped, meetings: meetingsSeen });
 }

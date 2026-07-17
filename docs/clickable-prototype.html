@@ -6,20 +6,20 @@
 <title>SalesRx — Walk in prepared</title>
 <style>
   :root{
-    --bg:#0d1117; --panel:#161c26; --panel2:#1c2432; --border:#2a3446;
-    --text:#e8edf4; --muted:#8b98ab; --accent:#34d399; --accent-dim:#10b981;
-    --accent2:#60a5fa; --warn:#fbbf24; --danger:#f87171; --radius:14px;
+    --bg:#061224; --panel:#0b1f3a; --panel2:#122a47; --border:#22344e;
+    --text:#f4f6f8; --muted:#8a97a6; --accent:#0e8c55; --accent-bright:#3ddc97;
+    --accent2:#7fa3c7; --warn:#d9a441; --danger:#f87171; --alert:#c8102e; --radius:10px;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.5;}
   .app{max-width:860px;margin:0 auto;padding:20px 16px 60px;}
   header.top{display:flex;align-items:center;justify-content:space-between;padding:6px 0 22px;}
   .logo{font-size:20px;font-weight:800;letter-spacing:-.5px;}
-  .logo span{color:var(--accent);}
+  .logo span{color:var(--accent-bright);}
   .logo small{display:block;font-size:11px;font-weight:500;color:var(--muted);letter-spacing:0;}
   .stepper{display:flex;gap:6px;font-size:11px;color:var(--muted);}
   .stepper .dot{width:26px;height:26px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;}
-  .stepper .dot.active{background:var(--accent);color:#06281c;border-color:var(--accent);}
+  .stepper .dot.active{background:var(--accent);color:#fff;border-color:var(--accent);}
   .stepper .dot.done{border-color:var(--accent);color:var(--accent);}
   .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:16px;}
   h1{font-size:22px;letter-spacing:-.4px;margin-bottom:4px;}
@@ -30,7 +30,7 @@
   input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;}
   @media(max-width:560px){.row{grid-template-columns:1fr;}}
-  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#06281c;border:none;border-radius:10px;padding:12px 22px;font-size:14px;font-weight:700;cursor:pointer;margin-top:20px;}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px 22px;font-size:14px;font-weight:700;cursor:pointer;margin-top:20px;}
   .btn:hover{filter:brightness(1.1);}
   .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text);font-weight:600;}
   .btn.small{padding:8px 14px;font-size:13px;margin-top:0;}
@@ -40,7 +40,7 @@
   .tip{display:flex;gap:10px;padding:12px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;font-size:13.5px;}
   .tip .ico{flex:0 0 auto;}
   .tag{display:inline-block;background:var(--panel2);border:1px solid var(--border);border-radius:999px;padding:3px 10px;font-size:12px;color:var(--muted);margin:0 6px 6px 0;}
-  .tag.green{color:var(--accent);border-color:rgba(52,211,153,.4);}
+  .tag.green{color:var(--accent-bright);border-color:rgba(52,211,153,.4);}
   .tag.blue{color:var(--accent2);border-color:rgba(96,165,250,.4);}
   .tag.amber{color:var(--warn);border-color:rgba(251,191,36,.4);}
   /* loading */
@@ -48,22 +48,22 @@
   .loader li{display:flex;align-items:center;gap:10px;padding:9px 0;color:var(--muted);font-size:14px;opacity:.35;transition:opacity .3s;}
   .loader li.on{opacity:1;color:var(--text);}
   .loader li.done .spin{display:none;}
-  .loader li .check{display:none;color:var(--accent);font-weight:700;}
+  .loader li .check{display:none;color:var(--accent-bright);font-weight:700;}
   .loader li.done .check{display:inline;}
   .spin{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:rot .8s linear infinite;display:none;}
   .loader li.on:not(.done) .spin{display:inline-block;}
   @keyframes rot{to{transform:rotate(360deg);}}
   /* brief */
   .brief-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;}
-  .score{min-width:110px;text-align:center;background:var(--panel2);border:1px solid rgba(52,211,153,.4);border-radius:12px;padding:10px 14px;}
-  .score b{font-size:26px;color:var(--accent);display:block;line-height:1.1;}
+  .score{min-width:110px;text-align:center;background:var(--panel2);border:1px solid rgba(217,164,65,.45);border-radius:10px;padding:10px 14px;}
+  .score b{font-size:26px;color:var(--warn);display:block;line-height:1.1;}
   .score span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
-  .sig{border-left:3px solid var(--accent);padding:8px 12px;margin-bottom:10px;background:var(--panel2);border-radius:0 9px 9px 0;font-size:13.5px;}
-  .sig.warn{border-left-color:var(--warn);}
+  .sig{border-left:3px solid var(--accent-bright);padding:8px 12px;margin-bottom:10px;background:var(--panel2);border-radius:0 9px 9px 0;font-size:13.5px;}
+  .sig.warn{border-left-color:var(--alert);}
   .sig.info{border-left-color:var(--accent2);}
   .sig .when{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
   .person{display:flex;gap:12px;padding:12px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;}
-  .avatar{flex:0 0 42px;width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-weight:800;color:#06281c;font-size:15px;}
+  .avatar{flex:0 0 42px;width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#41586e,#0b1f3a);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--text);font-size:15px;}
   .person b{font-size:14px;}
   .person .role{font-size:12px;color:var(--muted);}
   .person .note{font-size:13px;margin-top:4px;}
@@ -90,7 +90,7 @@
 <body>
 <div class="app">
   <header class="top">
-    <div class="logo">Sales<span>Rx</span><small>walk in prepared</small></div>
+    <div class="logo" style="display:flex;align-items:center;gap:10px;"><svg width="34" height="22" viewBox="0 0 100 64" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 20,0 52,32 20,64 0,64 32,32" fill="#0E8C55"/><polygon points="36,0 56,0 88,32 56,64 36,64 68,32" fill="#F4F6F8"/><circle cx="93" cy="7" r="5" fill="#D9A441"/></svg><div>Sales<span>Rx</span><small>walk in prepared</small></div></div>
     <div class="stepper">
       <div class="dot" id="dot1">1</div><div class="dot" id="dot2">2</div><div class="dot" id="dot3">3</div>
     </div>

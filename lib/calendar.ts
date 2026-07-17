@@ -11,7 +11,7 @@ export interface CalendarMeeting {
   domains: string[]; // external company domains (deduped, freemail excluded)
 }
 
-const FREEMAIL = new Set([
+export const FREEMAIL = new Set([
   "gmail.com", "googlemail.com", "outlook.com", "hotmail.com", "live.com",
   "yahoo.com", "icloud.com", "me.com", "aol.com", "proton.me", "protonmail.com",
   "gmx.com", "mail.com",

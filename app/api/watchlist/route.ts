@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getCtx, unauthorized } from "@/lib/auth";
 import {
-  loadWatchlist,
-  saveWatchlist,
-  makeId,
-  normalizeHeadline,
-  type WatchItem,
+  loadWatchlist, saveWatchlist, makeId, normalizeHeadline, type WatchItem,
 } from "@/lib/watchlist";
 
-export async function GET() {
-  return NextResponse.json({ watchlist: loadWatchlist() });
+export async function GET(req: NextRequest) {
+  const ctx = await getCtx(req);
+  if (!ctx) return unauthorized();
+  return NextResponse.json({ watchlist: await loadWatchlist(ctx.workspaceId) });
 }
 
 export async function POST(req: NextRequest) {
+  const ctx = await getCtx(req);
+  if (!ctx) return unauthorized();
+
   let body: { name: string; domain?: string; knownSignals?: string[] };
   try {
     body = await req.json();
@@ -22,7 +24,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "name is required" }, { status: 400 });
   }
 
-  const items = loadWatchlist();
+  const items = await loadWatchlist(ctx.workspaceId);
   const id = makeId(body.name, body.domain);
   if (items.some((i) => i.id === id)) {
     return NextResponse.json({ watchlist: items, added: false });
@@ -36,14 +38,16 @@ export async function POST(req: NextRequest) {
     alerts: [],
   };
   items.push(item);
-  saveWatchlist(items);
+  await saveWatchlist(items, ctx.workspaceId);
   return NextResponse.json({ watchlist: items, added: true });
 }
 
 export async function DELETE(req: NextRequest) {
+  const ctx = await getCtx(req);
+  if (!ctx) return unauthorized();
   const id = req.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id is required" }, { status: 400 });
-  const items = loadWatchlist().filter((i) => i.id !== id);
-  saveWatchlist(items);
+  const items = (await loadWatchlist(ctx.workspaceId)).filter((i) => i.id !== id);
+  await saveWatchlist(items, ctx.workspaceId);
   return NextResponse.json({ watchlist: items });
 }

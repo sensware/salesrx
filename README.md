@@ -5,7 +5,7 @@
 
 **Walk in already knowing.**
 
-![version](https://img.shields.io/badge/version-1.2.2-0E8C55?labelColor=0B1F3A)
+![version](https://img.shields.io/badge/version-2.0.0-0E8C55?labelColor=0B1F3A)
 ![stack](https://img.shields.io/badge/Next.js_15_·_TypeScript-0B1F3A?labelColor=0B1F3A&color=41586E)
 ![ai](https://img.shields.io/badge/Anthropic_API_+_web_search-0E8C55?labelColor=0B1F3A)
 ![deploy](https://img.shields.io/badge/Docker-self--hostable-D9A441?labelColor=0B1F3A)
@@ -55,6 +55,10 @@ Full deployment guide: [`docs/deploy-docker.md`](docs/deploy-docker.md)
 | Variable | Default | Purpose |
 |---|---|---|
 | `ANTHROPIC_API_KEY` | — | **required** |
+| `DATABASE_URL` | — | **v2 team mode:** Postgres storage, login, shared workspace memory. Unset = single-user file mode |
+| `AUTH_SECRET` | derived | session-signing secret for team mode |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | — | per-user Google Calendar OAuth (ICS stays as fallback) |
+| `SALESFORCE_INSTANCE_URL` / `SALESFORCE_ACCESS_TOKEN` | — | Salesforce sync (Account upsert + activity notes) |
 | `THEIRSTACK_API_KEY` | — | verified hiring + technographic signals; falls back to LLM web search |
 | `CALENDAR_ICS_URL` | — | secret iCal link → upcoming-meeting detection + auto-brief (no OAuth) |
 | `OWN_EMAIL_DOMAINS` | — | your company domain(s), so internal attendees are ignored |
@@ -73,7 +77,7 @@ Every integration is key-gated with a graceful fallback — no key, no breakage.
 
 **v1.2 — workflow.** Calendar auto-brief via secret ICS feed, one-click prep for upcoming external meetings (`POST /api/calendar/autoprep` pre-briefs the next 24h), HubSpot private-app sync, and the post-meeting memory loop: raw notes → outcomes, next steps, follow-up email draft, rolling account memory.
 
-**v2 — next.** Multi-rep teams with shared memory, Postgres, OAuth calendars, Salesforce.
+**v2.0 — teams.** Set `DATABASE_URL` and SalesRx becomes multi-user: register/login (JWT sessions), workspaces with invite codes, and **shared account memory** — any rep's logged meeting improves the whole team's next brief on that account. Postgres replaces file storage (schema bootstraps itself), Google Calendar connects per-user via OAuth (ICS feed remains the zero-setup fallback), and CRM sync now targets Salesforce alongside HubSpot. Without `DATABASE_URL`, everything still runs exactly as v1.2 — single rep, file storage, no login.
 
 ## Project structure
 

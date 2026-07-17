@@ -7,8 +7,30 @@ services:
       - "3000:3000"
     env_file:
       - .env
+    environment:
+      # v2.0 team mode — comment out to run single-user file mode instead
+      DATABASE_URL: postgres://salesrx:salesrx@postgres:5432/salesrx
     volumes:
       - salesrx-data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: salesrx-db
+    environment:
+      POSTGRES_USER: salesrx
+      POSTGRES_PASSWORD: salesrx
+      POSTGRES_DB: salesrx
+    volumes:
+      - salesrx-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U salesrx"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     restart: unless-stopped
 
   # Nightly watchlist refresh (03:00 UTC) — signal alerts without any external cron
@@ -25,3 +47,4 @@ services:
 
 volumes:
   salesrx-data:
+  salesrx-pgdata:

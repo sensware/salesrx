@@ -69,7 +69,7 @@ Open http://localhost:3000, set up a rep profile, and run one prospect research 
 
 ## Step 5 (recommended) — Compose instead of raw `docker run`
 
-The repo ships a `docker-compose.yml` that runs the app **plus** a tiny cron sidecar that refreshes the watchlist nightly at 03:00 UTC (so signal alerts arrive without you clicking anything):
+The repo ships a `docker-compose.yml` that runs the app, **Postgres (v2.0 team mode — login, workspaces, shared memory; comment out `DATABASE_URL` in the compose file to run single-user instead)**, plus a tiny cron sidecar that refreshes the watchlist nightly at 03:00 UTC and pre-briefs tomorrow's meetings at 05:00:
 
 ```bash
 docker compose up -d --build

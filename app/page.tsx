@@ -6,7 +6,14 @@ import type { WatchItem } from "@/lib/watchlist";
 import type { CalendarMeeting } from "@/lib/calendar";
 import type { MeetingRecord } from "@/lib/accounts";
 
-type Screen = "profile" | "search" | "loading" | "brief";
+type Screen = "auth" | "profile" | "search" | "loading" | "brief";
+
+interface Me {
+  mode: "multi" | "local";
+  user: { email?: string; name?: string; role?: string } | null;
+  googleAvailable: boolean;
+  googleConnected?: boolean;
+}
 
 const LOAD_STEPS = [
   "Company profile & firmographics",
@@ -50,6 +57,47 @@ export default function Home() {
   const [refreshing, setRefreshing] = useState(false);
   const [watchAdded, setWatchAdded] = useState(false);
   const [calMeetings, setCalMeetings] = useState<CalendarMeeting[] | null>(null);
+  const [me, setMe] = useState<Me | null>(null);
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [authForm, setAuthForm] = useState({ email: "", password: "", name: "", workspaceName: "", inviteCode: "" });
+  const [workspace, setWorkspace] = useState<{ workspace: { name: string; invite_code: string } | null; members: { email: string; name: string; role: string; calendar_connected: boolean }[] }>({ workspace: null, members: [] });
+
+  async function loadMe() {
+    try {
+      const res = await fetch("/api/auth/me");
+      const data: Me = await res.json();
+      setMe(data);
+      if (data.mode === "multi" && !data.user) setScreen("auth");
+      else if (data.mode === "multi") {
+        fetch("/api/workspace").then((r) => r.json()).then(setWorkspace).catch(() => {});
+        fetch("/api/profile").then((r) => r.json()).then((d) => { if (d.profile) setProfile(d.profile); }).catch(() => {});
+      }
+    } catch {}
+  }
+
+  async function submitAuth() {
+    setError(null);
+    const path = authMode === "login" ? "/api/auth/login" : "/api/auth/register";
+    try {
+      const res = await fetch(path, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(authForm),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Authentication failed");
+      setScreen("profile");
+      loadMe();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Authentication failed");
+    }
+  }
+
+  async function logout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setScreen("auth");
+    setMe((m) => (m ? { ...m, user: null } : m));
+  }
   const [notes, setNotes] = useState("");
   const [logging, setLogging] = useState(false);
   const [meetingResult, setMeetingResult] = useState<MeetingRecord | null>(null);
@@ -144,13 +192,15 @@ export default function Home() {
   }
 
   useEffect(() => {
-    // load saved profile
+    // load saved profile (local mode) then check auth mode
     const saved = typeof window !== "undefined" && localStorage.getItem("salesrx.profile");
     if (saved) {
       try {
         setProfile(JSON.parse(saved));
       } catch {}
     }
+    loadMe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -175,7 +225,7 @@ export default function Home() {
     }
   }, [screen]);
 
-  const step = screen === "profile" ? 1 : screen === "brief" ? 3 : 2;
+  const step = screen === "auth" || screen === "profile" ? 1 : screen === "brief" ? 3 : 2;
 
   async function generateTips() {
     localStorage.setItem("salesrx.profile", JSON.stringify(profile));
@@ -247,14 +297,92 @@ export default function Home() {
             <small>walk in prepared</small>
           </div>
         </div>
-        <div className="stepper">
-          {[1, 2, 3].map((n) => (
-            <div key={n} className={`dot ${n === step ? "active" : n < step ? "done" : ""}`}>
-              {n}
-            </div>
-          ))}
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {me?.mode === "multi" && me.user && (
+            <>
+              <span style={{ fontSize: 12, color: "var(--muted)" }}>{me.user.email}</span>
+              <button className="btn ghost small" onClick={logout}>Sign out</button>
+            </>
+          )}
+          <div className="stepper">
+            {[1, 2, 3].map((n) => (
+              <div key={n} className={`dot ${n === step ? "active" : n < step ? "done" : ""}`}>
+                {n}
+              </div>
+            ))}
+          </div>
         </div>
       </header>
+
+      {screen === "auth" && (
+        <section className="card" style={{ maxWidth: 460, margin: "40px auto" }}>
+          <h1>{authMode === "login" ? "Sign in" : "Create your account"}</h1>
+          <p className="sub">
+            {authMode === "login"
+              ? "Team mode is on — sign in to your workspace."
+              : "Start a new team workspace, or join one with an invite code."}
+          </p>
+          {authMode === "register" && (
+            <>
+              <label>Your name</label>
+              <input value={authForm.name} onChange={(e) => setAuthForm({ ...authForm, name: e.target.value })} placeholder="e.g. Luke Jian" />
+            </>
+          )}
+          <label>Email</label>
+          <input type="email" value={authForm.email} onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })} placeholder="you@company.com" />
+          <label>Password</label>
+          <input type="password" value={authForm.password} onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })} placeholder={authMode === "register" ? "8+ characters" : ""} />
+          {authMode === "register" && (
+            <div className="row">
+              <div>
+                <label>New workspace name</label>
+                <input value={authForm.workspaceName} onChange={(e) => setAuthForm({ ...authForm, workspaceName: e.target.value, inviteCode: "" })} placeholder="e.g. Northeast pod" />
+              </div>
+              <div>
+                <label>…or invite code</label>
+                <input value={authForm.inviteCode} onChange={(e) => setAuthForm({ ...authForm, inviteCode: e.target.value, workspaceName: "" })} placeholder="from your admin" />
+              </div>
+            </div>
+          )}
+          <button className="btn" onClick={submitAuth}>
+            {authMode === "login" ? "Sign in →" : "Create account →"}
+          </button>{" "}
+          <button className="btn ghost" onClick={() => { setAuthMode(authMode === "login" ? "register" : "login"); setError(null); }}>
+            {authMode === "login" ? "New here? Register" : "Have an account? Sign in"}
+          </button>
+          {error && <div className="err">{error}</div>}
+        </section>
+      )}
+
+      {screen === "profile" && me?.mode === "multi" && (
+        <section className="card">
+          <h2>👥 {workspace.workspace?.name || "Your workspace"}</h2>
+          <p className="sub" style={{ marginBottom: 10 }}>
+            Team memory is shared: any member&apos;s logged meeting makes everyone&apos;s next brief on that account smarter.
+            {workspace.workspace && (
+              <> Invite teammates with code <b style={{ color: "var(--accent-bright)" }}>{workspace.workspace.invite_code}</b>.</>
+            )}
+          </p>
+          <div>
+            {workspace.members.map((m) => (
+              <span key={m.email} className="tag" title={m.email}>
+                {m.name} · {m.role}{m.calendar_connected ? " · 📅" : ""}
+              </span>
+            ))}
+          </div>
+          {me.googleAvailable && (
+            <div style={{ marginTop: 12 }}>
+              {me.googleConnected ? (
+                <span className="tag green">✓ Google Calendar connected</span>
+              ) : (
+                <a className="btn ghost small" href="/api/integrations/google/start" style={{ textDecoration: "none" }}>
+                  Connect Google Calendar
+                </a>
+              )}
+            </div>
+          )}
+        </section>
+      )}
 
       {screen === "profile" && (
         <section className="card">

@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { client, MODEL, extractJson, textOf } from "@/lib/anthropic";
 import { meetingNotesSystemPrompt } from "@/lib/prompts";
-import { getOrCreateAccount, updateAccount, type MeetingRecord } from "@/lib/accounts";
+import { getCtx, unauthorized } from "@/lib/auth";
+import {
+  getOrCreateAccount, updateAccount, loadAccounts, type MeetingRecord,
+} from "@/lib/accounts";
 
 export const maxDuration = 120;
 
-/** Log meeting notes for an account: extracts outcomes/next steps, drafts the
- *  follow-up email, and updates the rolling account memory. */
+/** Log meeting notes: extracts outcomes/next steps, drafts the follow-up
+ *  email, and updates the workspace-shared account memory. */
 export async function POST(req: NextRequest) {
+  const ctx = await getCtx(req);
+  if (!ctx) return unauthorized();
+
   let body: { name: string; domain?: string; notes: string };
   try {
     body = await req.json();
@@ -18,7 +24,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "name and notes are required" }, { status: 400 });
   }
 
-  const account = getOrCreateAccount(body.name, body.domain);
+  const account = await getOrCreateAccount(body.name, body.domain, ctx.workspaceId);
 
   try {
     const anthropic = client();
@@ -53,10 +59,11 @@ ${body.notes}`,
       nextSteps: extracted.nextSteps || [],
       objectionsHeard: extracted.objectionsHeard || [],
       followUpEmail: extracted.followUpEmail || "",
+      loggedBy: ctx.email,
     };
     account.meetings.push(record);
     account.memorySummary = extracted.memoryUpdate || account.memorySummary;
-    updateAccount(account);
+    await updateAccount(account, ctx.workspaceId);
 
     return NextResponse.json({ meeting: record, memorySummary: account.memorySummary });
   } catch (err: unknown) {
@@ -65,8 +72,9 @@ ${body.notes}`,
   }
 }
 
-/** List accounts with memory (for a future accounts view). */
-export async function GET() {
-  const { loadAccounts } = await import("@/lib/accounts");
-  return NextResponse.json({ accounts: loadAccounts() });
+/** List the workspace's accounts with memory. */
+export async function GET(req: NextRequest) {
+  const ctx = await getCtx(req);
+  if (!ctx) return unauthorized();
+  return NextResponse.json({ accounts: await loadAccounts(ctx.workspaceId) });
 }
