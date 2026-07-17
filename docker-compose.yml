@@ -1,0 +1,27 @@
+services:
+  salesrx:
+    build: .
+    image: salesrx:latest
+    container_name: salesrx
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - salesrx-data:/app/data
+    restart: unless-stopped
+
+  # Nightly watchlist refresh (03:00 UTC) — signal alerts without any external cron
+  watchlist-cron:
+    image: alpine:3.20
+    container_name: salesrx-cron
+    depends_on:
+      - salesrx
+    command: >
+      sh -c "apk add --no-cache curl >/dev/null &&
+             echo '0 3 * * * curl -s -X POST http://salesrx:3000/api/watchlist/refresh' | crontab - &&
+             crond -f -l 8"
+    restart: unless-stopped
+
+volumes:
+  salesrx-data:
