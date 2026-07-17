@@ -161,6 +161,33 @@ export default function Home() {
     }
   }
 
+  const [speaking, setSpeaking] = useState(false);
+
+  /** v2.6 — the "corner talk": 2-3 min audio brief via browser TTS, zero API cost. */
+  function toggleAudioBrief() {
+    if (!brief) return;
+    if (speaking) {
+      window.speechSynthesis.cancel();
+      setSpeaking(false);
+      return;
+    }
+    const parts = [
+      `Corner talk for your meeting with ${brief.company}. Fit score: ${brief.fitScore} out of 100.`,
+      brief.summary,
+      `Key signals. ${brief.signals.slice(0, 3).map((s) => `${s.headline}. ${s.detail}`).join(" Next: ")}`,
+      `The pains to surface. ${brief.painPoints.map((p, i) => `Pain ${i + 1}: ${p.pain}. Your consequence question: ${p.ladder.find((l) => l.stage === "Consequence")?.question || p.ladder[p.ladder.length - 1]?.question || ""}`).join(" ")}`,
+      `If they push back. ${brief.objections.map((o) => `On "${o.objection}", respond: ${o.response}`).join(" ")}`,
+      `Key people. ${brief.people.map((p) => `${p.name}, ${p.title}. ${p.note}`).join(" ")}`,
+      `Remember: stay curious, let them talk, and pause after consequence questions. Walk in already knowing.`,
+    ];
+    const u = new SpeechSynthesisUtterance(parts.join(" ... "));
+    u.rate = 1.02;
+    u.onend = () => setSpeaking(false);
+    u.onerror = () => setSpeaking(false);
+    window.speechSynthesis.speak(u);
+    setSpeaking(true);
+  }
+
   function scriptToText(s: CallScript): string {
     return (
       `NEPQ call script — ${s.company} (${s.meetingType}, ${s.durationHint})\n\n` +
@@ -348,6 +375,9 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Research failed");
       setBrief(data.brief);
+      try {
+        localStorage.setItem("salesrx.lastBrief", JSON.stringify(data.brief)); // pocket brief
+      } catch {}
       setScreen("brief");
       window.scrollTo({ top: 0 });
     } catch (e) {
@@ -1099,6 +1129,12 @@ export default function Home() {
             <button className="btn small" onClick={addToWatchlist} disabled={watchAdded}>
               {watchAdded ? "✓ On your watchlist" : "🔔 Add to watchlist"}
             </button>{" "}
+            <button className="btn ghost small" onClick={toggleAudioBrief}>
+              {speaking ? "⏹ Stop audio" : "🔊 Audio brief"}
+            </button>{" "}
+            <a className="btn ghost small" href="/pocket" style={{ textDecoration: "none" }}>
+              📱 Pocket view
+            </a>{" "}
             <button className="btn small ghost" onClick={() => syncToCrm({ brief })}>
               ↗ Sync brief to CRM
             </button>{" "}

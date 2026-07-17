@@ -5,7 +5,7 @@
 
 **Walk in already knowing.**
 
-![version](https://img.shields.io/badge/version-2.5.0-0E8C55?labelColor=0B1F3A)
+![version](https://img.shields.io/badge/version-2.6.0-0E8C55?labelColor=0B1F3A)
 ![stack](https://img.shields.io/badge/Next.js_15_·_TypeScript-0B1F3A?labelColor=0B1F3A&color=41586E)
 ![ai](https://img.shields.io/badge/Anthropic_API_+_web_search-0E8C55?labelColor=0B1F3A)
 ![deploy](https://img.shields.io/badge/Docker-self--hostable-D9A441?labelColor=0B1F3A)
@@ -71,6 +71,7 @@ Full deployment guide: [`docs/deploy-docker.md`](docs/deploy-docker.md)
 | `SALESRX_CACHE_TTL_HOURS` | `24` | brief cache freshness |
 | `SALESRX_PLAN` | `pro` | `free` / `pro` / `team` — sets default usage limits (margin guard) |
 | `SALESRX_MONTHLY_BRIEF_LIMIT` | plan-based | fresh briefs per rep per month (30 on Pro = 70% margin floor) |
+| `SLACK_WEBHOOK_URL` | — | morning digest: today's meetings + fresh watchlist signals |
 
 Every integration is key-gated with a graceful fallback — no key, no breakage.
 
@@ -90,7 +91,11 @@ Every integration is key-gated with a graceful fallback — no key, no breakage.
 
 **v2.3 — NEPQ call scripts.** One click on any brief generates a word-for-word call script grounded in that prospect's real pain points: permission-based opener referencing a researched fact, the full question ladder, objection reframes with exact wording, and close-the-next-meeting language — with coach notes throughout that teach new reps NEPQ delivery (when to pause, what to listen for). Cold call, discovery, or follow-up variants; team account memory included.
 
-**Next** — see [`docs/roadmap.md`](docs/roadmap.md): the Dojo (AI roleplay practice), outcome analytics, pocket brief PWA + audio briefs, enterprise (SOC 2/SSO).
+**v2.5 — proof.** Meeting logs now capture structured outcomes — next step booked and deal stage, declared by the rep or inferred from the notes. The team analytics card computes the loop: next-step rate, briefed-account→meeting conversion, stage funnel, most-heard objections, and per-rep stats (`GET /api/analytics`).
+
+**v2.6 — in the room.** Pocket brief at `/pocket` — installable PWA rendering the last brief from device storage, built for parking lots; an audio "corner talk" of any brief via browser TTS (zero API cost); and a Slack morning digest (`SLACK_WEBHOOK_URL`) with today's external meetings and fresh watchlist signals, cron'd weekdays at 06:30 in compose.
+
+**Next** — see [`docs/roadmap.md`](docs/roadmap.md): the Dojo (AI roleplay practice against the actual brief), then enterprise (SOC 2/SSO, Microsoft calendar).
 
 ## Project structure
 
