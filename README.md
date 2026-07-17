@@ -69,6 +69,8 @@ Full deployment guide: [`docs/deploy-docker.md`](docs/deploy-docker.md)
 | `SALESRX_MODEL` | `claude-sonnet-5` | model for research + synthesis |
 | `SALESRX_MAX_WEB_SEARCHES` | `8` | web-search budget per brief |
 | `SALESRX_CACHE_TTL_HOURS` | `24` | brief cache freshness |
+| `SALESRX_PLAN` | `pro` | `free` / `pro` / `team` — sets default usage limits (margin guard) |
+| `SALESRX_MONTHLY_BRIEF_LIMIT` | plan-based | fresh briefs per rep per month (30 on Pro = 70% margin floor) |
 
 Every integration is key-gated with a graceful fallback — no key, no breakage.
 
@@ -84,7 +86,11 @@ Every integration is key-gated with a graceful fallback — no key, no breakage.
 
 **v2.0 — teams.** Set `DATABASE_URL` and SalesRx becomes multi-user: register/login (JWT sessions), workspaces with invite codes, and **shared account memory** — any rep's logged meeting improves the whole team's next brief on that account. Postgres replaces file storage (schema bootstraps itself), Google Calendar connects per-user via OAuth (ICS feed remains the zero-setup fallback), and CRM sync now targets Salesforce alongside HubSpot. Without `DATABASE_URL`, everything still runs exactly as v1.2 — single rep, file storage, no login.
 
-**Next** — SOC 2, enterprise SSO, Microsoft OAuth calendar, mobile battle card.
+**v2.2 — margin guard.** Per-rep monthly usage metering with plan limits derived from the margin math: 30% of the $49 Pro price = $14.70 COGS budget = 30 fresh briefs at ~$0.49 each, so **≥70% gross margin holds by construction**. Cached results are always free; limits are env-overridable for self-hosters (`SALESRX_PLAN`, `SALESRX_MONTHLY_BRIEF_LIMIT`). Usage meter in the UI, friendly 429s with the reset date.
+
+**v2.3 — NEPQ call scripts.** One click on any brief generates a word-for-word call script grounded in that prospect's real pain points: permission-based opener referencing a researched fact, the full question ladder, objection reframes with exact wording, and close-the-next-meeting language — with coach notes throughout that teach new reps NEPQ delivery (when to pause, what to listen for). Cold call, discovery, or follow-up variants; team account memory included.
+
+**Next** — see [`docs/roadmap.md`](docs/roadmap.md): the Dojo (AI roleplay practice), outcome analytics, pocket brief PWA + audio briefs, enterprise (SOC 2/SSO).
 
 ## Project structure
 
