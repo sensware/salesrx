@@ -5,6 +5,8 @@ import { getStructuredSignals, signalsToPromptBlock } from "./theirstack";
 import { primarySourcesBlock } from "./primary-sources";
 import { getOrCreateAccount, updateAccount, memoryToPromptBlock } from "./accounts";
 import { cacheGet, cacheSet } from "./cache";
+import { consume } from "./usage";
+import type { Ctx } from "./auth";
 import type { Brief, ProspectInput, RepProfile } from "./types";
 
 export function briefCacheKey(
@@ -18,11 +20,15 @@ export function briefCacheKey(
 export async function runResearch(
   profile: RepProfile,
   prospect: ProspectInput,
-  workspaceId = "local"
+  workspaceId = "local",
+  consumeFor?: Ctx
 ): Promise<{ brief: Brief; cached: boolean }> {
   const cacheKey = briefCacheKey(profile, prospect, workspaceId);
   const cached = await cacheGet<Brief>(cacheKey);
   if (cached) return { brief: cached, cached: true };
+
+  // v2.2: fresh research consumes a brief credit (cached hits above are free)
+  if (consumeFor) await consume(consumeFor, "briefs");
 
   // v1.1: structured hiring + technographic signals (optional, key-gated)
   // v2.1: primary sources — SEC filings, press coverage, earnings-call excerpts

@@ -46,7 +46,8 @@ export async function POST() {
         const { cached } = await runResearch(
           profile,
           { name: domain.split(".")[0], domain },
-          workspaceId
+          workspaceId,
+          { userId, workspaceId } // auto-prep counts against the rep's monthly briefs
         );
         prepped.push({ user: userId, domain, cached });
       } catch (e) {

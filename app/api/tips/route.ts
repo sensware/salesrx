@@ -21,6 +21,8 @@ export async function POST(req: NextRequest) {
   if (cached) return NextResponse.json({ tips: cached, cached: true });
 
   try {
+    const { consume } = await import("@/lib/usage");
+    await consume(ctx, "tips");
     const anthropic = client();
     const msg = await anthropic.messages.create({
       model: MODEL,
@@ -33,6 +35,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ tips, cached: false });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Tips generation failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = (err as { status?: number })?.status === 429 ? 429 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

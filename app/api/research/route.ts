@@ -24,10 +24,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const result = await runResearch(profile, prospect, ctx.workspaceId);
+    const result = await runResearch(profile, prospect, ctx.workspaceId, ctx);
     return NextResponse.json(result);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Research failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = (err as { status?: number })?.status === 429 ? 429 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

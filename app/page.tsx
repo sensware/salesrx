@@ -58,6 +58,20 @@ export default function Home() {
   const [watchAdded, setWatchAdded] = useState(false);
   const [calMeetings, setCalMeetings] = useState<CalendarMeeting[] | null>(null);
   const [me, setMe] = useState<Me | null>(null);
+  const [usage, setUsage] = useState<{
+    plan: string;
+    used: { briefs: number; scripts: number };
+    limits: { briefs: number; scripts: number };
+    estCostUsd: number;
+    budgetUsd: number;
+  } | null>(null);
+
+  async function loadUsage() {
+    try {
+      const res = await fetch("/api/usage");
+      if (res.ok) setUsage(await res.json());
+    } catch {}
+  }
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [authForm, setAuthForm] = useState({ email: "", password: "", name: "", workspaceName: "", inviteCode: "" });
   const [workspace, setWorkspace] = useState<{ workspace: { name: string; invite_code: string } | null; members: { email: string; name: string; role: string; calendar_connected: boolean }[] }>({ workspace: null, members: [] });
@@ -207,6 +221,7 @@ export default function Home() {
     if (screen === "search") {
       loadWatch();
       loadCalendar();
+      loadUsage();
     }
     if (screen === "brief") {
       setWatchAdded(false);
@@ -510,6 +525,16 @@ export default function Home() {
           <button className="btn ghost" onClick={() => setScreen("profile")}>
             ← Edit profile
           </button>
+          {usage && (
+            <div style={{ marginTop: 16, fontSize: 12, color: "var(--muted)" }}>
+              Fresh briefs this month: {usage.used.briefs}/{usage.limits.briefs}
+              {usage.used.briefs >= usage.limits.briefs * 0.8 && (
+                <span style={{ color: "var(--warn)" }}> · approaching limit</span>
+              )}{" "}
+              · est. AI spend ${usage.estCostUsd.toFixed(2)} of ${usage.budgetUsd.toFixed(2)} budget
+              · cached re-runs are free
+            </div>
+          )}
           {error && <div className="err">{error}</div>}
         </section>
       )}

@@ -27,6 +27,8 @@ export async function POST(req: NextRequest) {
   const account = await getOrCreateAccount(body.name, body.domain, ctx.workspaceId);
 
   try {
+    const { consume } = await import("@/lib/usage");
+    await consume(ctx, "meetings");
     const anthropic = client();
     const msg = await anthropic.messages.create({
       model: MODEL,
@@ -68,7 +70,8 @@ ${body.notes}`,
     return NextResponse.json({ meeting: record, memorySummary: account.memorySummary });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Meeting analysis failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = (err as { status?: number })?.status === 429 ? 429 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
 

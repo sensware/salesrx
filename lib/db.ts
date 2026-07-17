@@ -50,6 +50,10 @@ CREATE TABLE IF NOT EXISTS cache (
   value jsonb NOT NULL,
   updated_at timestamptz DEFAULT now()
 );
+CREATE TABLE IF NOT EXISTS usage_meter (
+  key text PRIMARY KEY,
+  data jsonb NOT NULL
+);
 `;
 
 export async function db(): Promise<Pool> {
