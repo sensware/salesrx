@@ -82,7 +82,9 @@ Respond with ONLY a JSON object (no markdown fence):
   "nextSteps": string[],       // concrete commitments with owners if stated
   "objectionsHeard": string[], // objections raised, verbatim-ish
   "followUpEmail": string,     // ready-to-send draft, plain text
-  "memoryUpdate": string       // new rolling account summary
+  "memoryUpdate": string,      // new rolling account summary
+  "nextStepBooked": boolean,   // did the meeting end with a concrete scheduled next step?
+  "stage": "discovery"|"proposal"|"negotiation"|"closed-won"|"closed-lost"|"no-next-step"
 }`;
 }
 

@@ -115,7 +115,26 @@ export default function Home() {
     setMe((m) => (m ? { ...m, user: null } : m));
   }
   const [notes, setNotes] = useState("");
+  const [nextStepSel, setNextStepSel] = useState<"auto" | "yes" | "no">("auto");
+  const [stageSel, setStageSel] = useState<string>("auto");
+  const [analytics, setAnalytics] = useState<{
+    accountsResearched: number;
+    briefsRun: number;
+    meetingsLogged: number;
+    briefToMeetingRate: number;
+    nextStepRate: number;
+    stages: Record<string, number>;
+    topObjections: { objection: string; count: number }[];
+    perRep: { rep: string; meetings: number; nextStepRate: number }[];
+  } | null>(null);
   const [logging, setLogging] = useState(false);
+
+  async function loadAnalytics() {
+    try {
+      const res = await fetch("/api/analytics");
+      if (res.ok) setAnalytics(await res.json());
+    } catch {}
+  }
   const [meetingResult, setMeetingResult] = useState<MeetingRecord | null>(null);
   const [crmStatus, setCrmStatus] = useState<string | null>(null);
   const [script, setScript] = useState<CallScript | null>(null);
@@ -173,7 +192,13 @@ export default function Home() {
       const res = await fetch("/api/meetings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: brief.company, domain: prospect.domain, notes }),
+        body: JSON.stringify({
+          name: brief.company,
+          domain: prospect.domain,
+          notes,
+          ...(nextStepSel !== "auto" ? { nextStepBooked: nextStepSel === "yes" } : {}),
+          ...(stageSel !== "auto" ? { stage: stageSel } : {}),
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Meeting analysis failed");
@@ -262,6 +287,7 @@ export default function Home() {
       loadWatch();
       loadCalendar();
       loadUsage();
+      loadAnalytics();
     }
     if (screen === "brief") {
       setWatchAdded(false);
@@ -626,6 +652,48 @@ export default function Home() {
         </section>
       )}
 
+      {screen === "search" && analytics && analytics.meetingsLogged > 0 && (
+        <section className="card">
+          <h2>📊 Team analytics</h2>
+          <div style={{ display: "flex", gap: 24, flexWrap: "wrap", marginBottom: 12 }}>
+            {[
+              { v: `${Math.round(analytics.nextStepRate * 100)}%`, l: "meetings → next step booked", gold: true },
+              { v: `${Math.round(analytics.briefToMeetingRate * 100)}%`, l: "briefed accounts → meeting" },
+              { v: String(analytics.meetingsLogged), l: "meetings logged" },
+              { v: String(analytics.accountsResearched), l: "accounts researched" },
+            ].map((t, i) => (
+              <div key={i}>
+                <div style={{ fontSize: 26, fontWeight: 800, color: t.gold ? "var(--win)" : "var(--text)", fontVariantNumeric: "tabular-nums" }}>{t.v}</div>
+                <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>{t.l}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginBottom: 10 }}>
+            {Object.entries(analytics.stages)
+              .filter(([, n]) => n > 0)
+              .map(([stage, n]) => (
+                <span key={stage} className={`tag ${stage === "closed-won" ? "green" : stage === "closed-lost" ? "amber" : "blue"}`}>
+                  {stage} · {n}
+                </span>
+              ))}
+          </div>
+          {analytics.topObjections.length > 0 && (
+            <div style={{ fontSize: 12.5, color: "var(--muted)" }}>
+              Most-heard objections:{" "}
+              {analytics.topObjections.map((o) => `"${o.objection}" (${o.count})`).join(" · ")}
+            </div>
+          )}
+          {analytics.perRep.length > 1 && (
+            <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 6 }}>
+              By rep:{" "}
+              {analytics.perRep
+                .map((r) => `${r.rep}: ${r.meetings} meetings, ${Math.round(r.nextStepRate * 100)}% next-step`)
+                .join(" · ")}
+            </div>
+          )}
+        </section>
+      )}
+
       {screen === "search" && (
         <section className="card">
           <h2>
@@ -959,9 +1027,25 @@ export default function Home() {
               onChange={(e) => setNotes(e.target.value)}
               placeholder="e.g. Met with Dana and Marcus. Concerned about rollout time. Marcus wants ROI numbers by Friday. Dana hinted the renewal decision moved up to October…"
             />
-            <button className="btn small" style={{ marginTop: 12 }} onClick={logMeeting} disabled={logging || !notes.trim()}>
-              {logging ? "Analyzing…" : "Analyze & save"}
-            </button>
+            <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap", alignItems: "center" }}>
+              <select value={nextStepSel} onChange={(e) => setNextStepSel(e.target.value as "auto" | "yes" | "no")} style={{ maxWidth: 210 }}>
+                <option value="auto">Next step booked? (auto-detect)</option>
+                <option value="yes">Next step booked ✓</option>
+                <option value="no">No next step</option>
+              </select>
+              <select value={stageSel} onChange={(e) => setStageSel(e.target.value)} style={{ maxWidth: 200 }}>
+                <option value="auto">Stage (auto-detect)</option>
+                <option value="discovery">Discovery</option>
+                <option value="proposal">Proposal</option>
+                <option value="negotiation">Negotiation</option>
+                <option value="closed-won">Closed — won</option>
+                <option value="closed-lost">Closed — lost</option>
+                <option value="no-next-step">No next step</option>
+              </select>
+              <button className="btn small" onClick={logMeeting} disabled={logging || !notes.trim()}>
+                {logging ? "Analyzing…" : "Analyze & save"}
+              </button>
+            </div>
             {meetingResult && (
               <div style={{ marginTop: 16 }}>
                 <div className="grid2">

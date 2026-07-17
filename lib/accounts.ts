@@ -7,6 +7,14 @@ import { join, dirname } from "path";
 import { createHash } from "crypto";
 import { db, pgEnabled } from "./db";
 
+export type DealStage =
+  | "discovery"
+  | "proposal"
+  | "negotiation"
+  | "closed-won"
+  | "closed-lost"
+  | "no-next-step";
+
 export interface MeetingRecord {
   date: string; // ISO
   rawNotes: string;
@@ -15,6 +23,9 @@ export interface MeetingRecord {
   objectionsHeard: string[];
   followUpEmail: string;
   loggedBy?: string; // user email (multi-user mode)
+  // v2.5 — structured outcome (rep-declared wins over LLM-inferred)
+  nextStepBooked?: boolean;
+  stage?: DealStage;
 }
 
 export interface AccountRecord {

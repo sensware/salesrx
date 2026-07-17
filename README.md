@@ -5,7 +5,7 @@
 
 **Walk in already knowing.**
 
-![version](https://img.shields.io/badge/version-2.3.0-0E8C55?labelColor=0B1F3A)
+![version](https://img.shields.io/badge/version-2.5.0-0E8C55?labelColor=0B1F3A)
 ![stack](https://img.shields.io/badge/Next.js_15_·_TypeScript-0B1F3A?labelColor=0B1F3A&color=41586E)
 ![ai](https://img.shields.io/badge/Anthropic_API_+_web_search-0E8C55?labelColor=0B1F3A)
 ![deploy](https://img.shields.io/badge/Docker-self--hostable-D9A441?labelColor=0B1F3A)

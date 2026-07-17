@@ -14,7 +14,14 @@ export async function POST(req: NextRequest) {
   const ctx = await getCtx(req);
   if (!ctx) return unauthorized();
 
-  let body: { name: string; domain?: string; notes: string };
+  let body: {
+    name: string;
+    domain?: string;
+    notes: string;
+    // v2.5 — explicit outcome from the rep (wins over LLM inference)
+    nextStepBooked?: boolean;
+    stage?: import("@/lib/accounts").DealStage;
+  };
   try {
     body = await req.json();
   } catch {
@@ -52,6 +59,8 @@ ${body.notes}`,
       objectionsHeard: string[];
       followUpEmail: string;
       memoryUpdate: string;
+      nextStepBooked?: boolean;
+      stage?: MeetingRecord["stage"];
     }>(textOf(msg));
 
     const record: MeetingRecord = {
@@ -62,6 +71,9 @@ ${body.notes}`,
       objectionsHeard: extracted.objectionsHeard || [],
       followUpEmail: extracted.followUpEmail || "",
       loggedBy: ctx.email,
+      // rep-declared outcome wins over the model's inference
+      nextStepBooked: body.nextStepBooked ?? extracted.nextStepBooked,
+      stage: body.stage ?? extracted.stage,
     };
     account.meetings.push(record);
     account.memorySummary = extracted.memoryUpdate || account.memorySummary;
