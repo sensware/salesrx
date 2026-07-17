@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Brief, CoachingTip, ProspectInput, RepProfile } from "@/lib/types";
+import type { WatchItem } from "@/lib/watchlist";
 
 type Screen = "profile" | "search" | "loading" | "brief";
 
@@ -43,6 +44,52 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [loadStep, setLoadStep] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [watchlist, setWatchlist] = useState<WatchItem[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [watchAdded, setWatchAdded] = useState(false);
+
+  async function loadWatch() {
+    try {
+      const res = await fetch("/api/watchlist");
+      const data = await res.json();
+      if (res.ok) setWatchlist(data.watchlist);
+    } catch {}
+  }
+
+  async function addToWatchlist() {
+    if (!brief) return;
+    await fetch("/api/watchlist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: brief.company,
+        domain: prospect.domain || undefined,
+        knownSignals: brief.signals.map((s) => s.headline),
+      }),
+    });
+    setWatchAdded(true);
+    loadWatch();
+  }
+
+  async function refreshWatchlist(id?: string) {
+    setRefreshing(true);
+    try {
+      const res = await fetch("/api/watchlist/refresh", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(id ? { id } : {}),
+      });
+      const data = await res.json();
+      if (res.ok) setWatchlist(data.watchlist);
+    } catch {}
+    setRefreshing(false);
+  }
+
+  async function removeFromWatchlist(id: string) {
+    const res = await fetch(`/api/watchlist?id=${id}`, { method: "DELETE" });
+    const data = await res.json();
+    if (res.ok) setWatchlist(data.watchlist);
+  }
 
   useEffect(() => {
     // load saved profile
@@ -55,6 +102,8 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (screen === "search") loadWatch();
+    if (screen === "brief") setWatchAdded(false);
     if (screen === "loading") {
       setLoadStep(0);
       timerRef.current = setInterval(
@@ -264,6 +313,63 @@ export default function Home() {
         </section>
       )}
 
+      {screen === "search" && (
+        <section className="card">
+          <h2>
+            🔔 Watchlist
+            <button
+              className="btn ghost small"
+              style={{ marginLeft: "auto" }}
+              onClick={() => refreshWatchlist()}
+              disabled={refreshing || watchlist.length === 0}
+            >
+              {refreshing ? "Checking for new signals…" : "Check for new signals"}
+            </button>
+          </h2>
+          {watchlist.length === 0 && (
+            <p className="sub" style={{ marginBottom: 0 }}>
+              Empty — research a prospect and hit “Add to watchlist” on the brief. New signals
+              (funding, exec changes, hiring waves) show up here.
+            </p>
+          )}
+          {watchlist.map((w) => (
+            <div key={w.id} style={{ borderBottom: "1px solid var(--border)", padding: "10px 0" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5 }}>
+                <b>{w.name}</b>
+                {w.domain && <span className="tag">{w.domain}</span>}
+                {w.alerts.length > 0 && (
+                  <span className="tag amber">{w.alerts.length} alert{w.alerts.length > 1 ? "s" : ""}</span>
+                )}
+                <span style={{ marginLeft: "auto", fontSize: 11, color: "var(--muted)" }}>
+                  {w.lastCheckedAt
+                    ? `checked ${new Date(w.lastCheckedAt).toLocaleDateString()}`
+                    : "never checked"}
+                </span>
+                <button
+                  className="btn ghost small"
+                  onClick={() => removeFromWatchlist(w.id)}
+                  title="Remove"
+                >
+                  ✕
+                </button>
+              </div>
+              {w.alerts.slice(0, 3).map((a, i) => (
+                <div key={i} className={`sig ${a.kind}`} style={{ marginTop: 8 }}>
+                  <span className="when">{a.when}</span>
+                  <br />
+                  <b>{a.headline}</b> — {a.detail}{" "}
+                  {a.sourceUrl && (
+                    <a href={a.sourceUrl} target="_blank" rel="noreferrer">
+                      source ↗
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          ))}
+        </section>
+      )}
+
       {screen === "loading" && (
         <section className="card">
           <h1>Researching {prospect.name || prospect.domain}…</h1>
@@ -459,6 +565,9 @@ export default function Home() {
           )}
 
           <section className="card">
+            <button className="btn small" onClick={addToWatchlist} disabled={watchAdded}>
+              {watchAdded ? "✓ On your watchlist" : "🔔 Add to watchlist"}
+            </button>{" "}
             <button className="btn ghost small" onClick={() => setScreen("search")}>
               ← Research another prospect
             </button>

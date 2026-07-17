@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { client, MODEL, MAX_SEARCHES, extractJson, textOf } from "@/lib/anthropic";
 import { researchSystemPrompt, researchUserPrompt } from "@/lib/prompts";
+import { getStructuredSignals, signalsToPromptBlock } from "@/lib/theirstack";
 import { cacheGet, cacheSet } from "@/lib/cache";
 import type { Brief, ProspectInput, RepProfile } from "@/lib/types";
 
@@ -26,12 +27,18 @@ export async function POST(req: NextRequest) {
   if (cached) return NextResponse.json({ brief: cached, cached: true });
 
   try {
+    // v1.1: structured hiring + technographic signals (optional, key-gated)
+    const structured = await getStructuredSignals(prospect);
+    const structuredBlock = structured ? signalsToPromptBlock(structured) : undefined;
+
     const anthropic = client();
     const msg = await anthropic.messages.create({
       model: MODEL,
       max_tokens: 8000,
       system: researchSystemPrompt(),
-      messages: [{ role: "user", content: researchUserPrompt(profile, prospect) }],
+      messages: [
+        { role: "user", content: researchUserPrompt(profile, prospect, structuredBlock) },
+      ],
       tools: [
         {
           type: "web_search_20250305",

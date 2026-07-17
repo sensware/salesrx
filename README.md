@@ -35,13 +35,22 @@ npm run dev               # http://localhost:3000
 | Variable | Default | Purpose |
 |---|---|---|
 | `ANTHROPIC_API_KEY` | — | required |
+| `THEIRSTACK_API_KEY` | — | optional: verified hiring + technographic signals; falls back to LLM web search |
 | `SALESRX_MODEL` | `claude-sonnet-5` | model for research + synthesis |
 | `SALESRX_MAX_WEB_SEARCHES` | `8` | web-search budget per brief |
 | `SALESRX_CACHE_TTL_HOURS` | `24` | brief cache freshness |
 
+## v1.1 features
+
+- **Structured signals** — with a TheirStack key, briefs are grounded in job-posting data (open roles + detected tech stack with confidence levels) injected into the research agent as verified ground truth.
+- **Watchlist + alerts** — add a prospect from its brief; "Check for new signals" runs a cheap delta search (3 web searches, only NEW items vs. known signals). For nightly alerts, cron a POST to `/api/watchlist/refresh`:
+  ```
+  0 6 * * * curl -X POST http://localhost:3000/api/watchlist/refresh
+  ```
+
 ## Roadmap (see docs/pipeline-spec.md)
 
-- v1.1 — technographics + hiring-signal APIs (TheirStack/Crustdata), watchlist alerts
+- ~~v1.1 — technographics + hiring-signal APIs, watchlist alerts~~ ✓
 - v1.2 — calendar auto-brief, CRM sync, post-meeting notes → account memory
 
 ## Project structure

@@ -39,8 +39,12 @@ After researching, respond with ONLY a JSON object (no markdown fence, no prose)
 Target: 3-5 signals, 2-4 pain points (each with a full 4-step ladder), 2-4 people, 3 objections, 4 discovery questions.`;
 }
 
-export function researchUserPrompt(profile: RepProfile, prospect: ProspectInput): string {
-  return `REP PROFILE
+export function researchUserPrompt(
+  profile: RepProfile,
+  prospect: ProspectInput,
+  structuredBlock?: string
+): string {
+  return `${structuredBlock ? structuredBlock + "\n\n" : ""}REP PROFILE
 Industry: ${profile.industry}
 Vertical: ${profile.vertical}
 Product: ${profile.productType}
@@ -54,7 +58,21 @@ Domain: ${prospect.domain || "unknown — resolve it"}
 Location (HQ/branch): ${prospect.location || "unknown"}
 Contact to build rapport with: ${prospect.contact || "none given — skip rapport section (return empty array)"}
 
-Research this prospect now and return the brief JSON.`;
+Research this prospect now and return the brief JSON.${
+    structuredBlock
+      ? " Incorporate the VERIFIED STRUCTURED DATA above into stack, signals, and pain points — it is more reliable than web search for technographics and hiring."
+      : ""
+  }`;
+}
+
+export function deltaSystemPrompt(): string {
+  return `You are a sales-signal monitor. Given a company and a list of ALREADY-KNOWN signals, use web search to find NEW notable signals since the given date: funding, exec changes, layoffs, product launches, M&A, expansions, strategy shifts, relevant hiring waves.
+
+Rules:
+- Only report genuinely NEW items not covered by the known-signals list.
+- Every item needs a source URL you actually found. If nothing new, return [].
+- Respond with ONLY a JSON array (no markdown fence):
+[{"headline": string, "detail": string, "when": string, "kind": "opportunity"|"warning"|"info", "sourceUrl": string}]`;
 }
 
 export function tipsSystemPrompt(): string {
