@@ -71,3 +71,24 @@ export interface CoachingTip {
   icon: string;
   tip: string;
 }
+
+// v2.3 — NEPQ call script
+export type MeetingType = "cold-call" | "discovery" | "follow-up";
+
+export interface ScriptLine {
+  speaker: "rep" | "coach"; // coach = delivery note for new reps, not spoken
+  text: string;
+}
+
+export interface ScriptSection {
+  name: string;
+  goal: string; // what this section must achieve before moving on
+  lines: ScriptLine[];
+}
+
+export interface CallScript {
+  company: string;
+  meetingType: MeetingType;
+  durationHint: string;
+  sections: ScriptSection[];
+}

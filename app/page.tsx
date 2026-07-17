@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Brief, CoachingTip, ProspectInput, RepProfile } from "@/lib/types";
+import type {
+  Brief, CallScript, CoachingTip, MeetingType, ProspectInput, RepProfile,
+} from "@/lib/types";
 import type { WatchItem } from "@/lib/watchlist";
 import type { CalendarMeeting } from "@/lib/calendar";
 import type { MeetingRecord } from "@/lib/accounts";
@@ -116,6 +118,44 @@ export default function Home() {
   const [logging, setLogging] = useState(false);
   const [meetingResult, setMeetingResult] = useState<MeetingRecord | null>(null);
   const [crmStatus, setCrmStatus] = useState<string | null>(null);
+  const [script, setScript] = useState<CallScript | null>(null);
+  const [scriptType, setScriptType] = useState<MeetingType>("discovery");
+  const [scriptLoading, setScriptLoading] = useState(false);
+
+  async function generateScript() {
+    if (!brief) return;
+    setScriptLoading(true);
+    setScript(null);
+    try {
+      const res = await fetch("/api/script", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profile, brief, meetingType: scriptType, domain: prospect.domain }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Script generation failed");
+      setScript(data.script);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Script generation failed");
+    } finally {
+      setScriptLoading(false);
+    }
+  }
+
+  function scriptToText(s: CallScript): string {
+    return (
+      `NEPQ call script — ${s.company} (${s.meetingType}, ${s.durationHint})\n\n` +
+      s.sections
+        .map(
+          (sec) =>
+            `## ${sec.name} — ${sec.goal}\n` +
+            sec.lines
+              .map((l) => (l.speaker === "coach" ? `   [coach: ${l.text}]` : `REP: ${l.text}`))
+              .join("\n")
+        )
+        .join("\n\n")
+    );
+  }
 
   async function loadCalendar() {
     try {
@@ -227,6 +267,7 @@ export default function Home() {
       setWatchAdded(false);
       setMeetingResult(null);
       setCrmStatus(null);
+      setScript(null);
     }
     if (screen === "loading") {
       setLoadStep(0);
@@ -835,6 +876,75 @@ export default function Home() {
               </ol>
             </section>
           )}
+
+          <section className="card">
+            <h2>📞 NEPQ call script</h2>
+            <p className="sub">
+              A word-for-word script built from this brief&apos;s real pain points — opener,
+              question ladders, objection reframes, and the close. Coach notes teach new reps
+              the NEPQ delivery as they go.
+            </p>
+            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+              <select
+                value={scriptType}
+                onChange={(e) => setScriptType(e.target.value as MeetingType)}
+                style={{ maxWidth: 220 }}
+              >
+                <option value="cold-call">Cold call</option>
+                <option value="discovery">Discovery meeting</option>
+                <option value="follow-up">Follow-up meeting</option>
+              </select>
+              <button className="btn small" onClick={generateScript} disabled={scriptLoading}>
+                {scriptLoading ? "Writing script…" : "Generate script"}
+              </button>
+              {script && (
+                <button
+                  className="btn ghost small"
+                  onClick={() => navigator.clipboard.writeText(scriptToText(script))}
+                >
+                  📋 Copy full script
+                </button>
+              )}
+            </div>
+            {script && (
+              <div style={{ marginTop: 16 }}>
+                <p className="sub" style={{ marginBottom: 10 }}>
+                  {script.durationHint} · prospect should do ~70% of the talking — the script is
+                  questions and silence, not a pitch.
+                </p>
+                {script.sections.map((sec, i) => (
+                  <div className="nepq-pain" key={i}>
+                    <div className="pain-title">
+                      {i + 1} · {sec.name}
+                      <span style={{ fontWeight: 400, fontSize: 12, color: "var(--muted)", marginLeft: 8 }}>
+                        {sec.goal}
+                      </span>
+                    </div>
+                    {sec.lines.map((l, j) =>
+                      l.speaker === "coach" ? (
+                        <div
+                          key={j}
+                          style={{
+                            fontSize: 12,
+                            color: "var(--warn)",
+                            margin: "6px 0 10px 12px",
+                            borderLeft: "2px solid var(--warn)",
+                            paddingLeft: 8,
+                          }}
+                        >
+                          🎙 {l.text}
+                        </div>
+                      ) : (
+                        <div key={j} className="nepq-q">
+                          “{l.text}”
+                        </div>
+                      )
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
 
           <section className="card">
             <h2>📝 Log meeting notes</h2>
