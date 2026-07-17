@@ -23,7 +23,8 @@ Rep profile + prospect input (or auto-detected from calendar)
 POST /api/research
         │  Claude + live web search  →  cited signals, never invented
         │  TheirStack (optional)     →  verified hiring + technographic data
-        │  Account memory            →  what happened in previous meetings
+        │  SEC EDGAR + press RSS     →  filings, press releases, earnings-call excerpts
+        │  Account memory            →  what the team already knows (shared per workspace)
         ▼
 The Brief — signals · NEPQ ladders · decision map · objections · fit score
         │
@@ -83,18 +84,23 @@ Every integration is key-gated with a graceful fallback — no key, no breakage.
 
 **v2.0 — teams.** Set `DATABASE_URL` and SalesRx becomes multi-user: register/login (JWT sessions), workspaces with invite codes, and **shared account memory** — any rep's logged meeting improves the whole team's next brief on that account. Postgres replaces file storage (schema bootstraps itself), Google Calendar connects per-user via OAuth (ICS feed remains the zero-setup fallback), and CRM sync now targets Salesforce alongside HubSpot. Without `DATABASE_URL`, everything still runs exactly as v1.2 — single rep, file storage, no login.
 
+**Next** — SOC 2, enterprise SSO, Microsoft OAuth calendar, mobile battle card.
+
 ## Project structure
 
 ```
-app/page.tsx               3-screen flow: profile → research → brief
-app/api/research           live research pipeline
-app/api/meetings           notes → extraction → account memory
-app/api/calendar[/autoprep] ICS meetings + cron pre-briefing
-app/api/watchlist[/refresh] signal alerts (delta-only)
-app/api/crm/sync           HubSpot company notes
-lib/                       prompts, research core, signals, memory, cache
-docs/                      pipeline spec · deploy guide · brand guidelines · pitch deck
-public/brand/              logo assets (The Advance)
+app/page.tsx                flow: (login) → profile → research → brief
+app/api/auth, /workspace    v2.0 accounts, sessions, invite codes
+app/api/research            live research pipeline
+app/api/meetings            notes → extraction → shared account memory
+app/api/calendar[/autoprep] Google OAuth or ICS meetings + cron pre-briefing
+app/api/watchlist[/refresh] signal alerts (delta-only, all-workspace cron sweep)
+app/api/crm/sync            HubSpot + Salesforce notes
+app/api/integrations/google OAuth connect flow
+lib/                        prompts · research core · db (Postgres/file) · auth
+                            theirstack · edgar · newsfeed · transcripts · gcal · salesforce
+docs/                       pipeline spec · deploy guide · brand guidelines · pitch deck · business plan
+public/brand/               logo assets (The Advance)
 ```
 
 ## Brand

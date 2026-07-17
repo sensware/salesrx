@@ -94,11 +94,14 @@ Prompt rules that matter: questions must be answerable only by the prospect (no 
 
 - **App:** Next.js + Postgres (accounts, briefs, cached signals) + a job queue (Inngest/Trigger.dev or plain BullMQ) for the pipeline.
 - **LLM:** Anthropic API — agentic research (web search tool) + one synthesis call.
-- **Per-brief cost estimate:** enrichment $0.05–0.30, job/tech signals $0.05–0.20, news ~free–$0.05, LLM (research + synthesis) $0.10–0.40 → **roughly $0.25–1.00 per brief**. At a $20–50/mo/rep price with ~30 briefs/mo, margins work; caching (30-day entity, 24-hour signals) cuts repeat-lookup cost sharply.
-- **Phasing:**
-  - **MVP (4–6 wks):** manual prospect input → live brief with news + firmographics + LLM research agent + NEPQ ladders. Skip calendar/CRM.
-  - **v1.1:** technographics + hiring signals APIs, watchlist alerts.
-  - **v1.2:** calendar auto-brief, CRM sync (HubSpot first), post-meeting loop.
+- **Per-brief cost estimate:** enrichment $0.05–0.30, job/tech signals $0.05–0.20, news ~free–$0.05, LLM (research + synthesis) $0.10–0.40 → **roughly $0.25–1.00 per brief**. At $49/rep/mo (Pro) and $79/rep/mo (Team) with ~30 briefs/rep/mo, margins work (~75% gross); caching (30-day entity, 24-hour signals) cuts repeat-lookup cost sharply.
+- **Phasing (all shipped as of July 2026):**
+  - **MVP ✓** — live briefs with LLM research agent + NEPQ ladders.
+  - **v1.1 ✓** — TheirStack technographics + hiring signals, watchlist with delta alerts.
+  - **v1.2 ✓** — calendar auto-brief (ICS), HubSpot sync, post-meeting memory loop, Docker.
+  - **v2.0 ✓** — multi-rep workspaces with shared memory, Postgres (file-store fallback), Google OAuth calendar, Salesforce.
+  - **v2.1 ✓** — primary sources: SEC EDGAR filings, Google News press RSS ([PR]-flagged), earnings-call transcript excerpts (API Ninjas, key-optional).
+  - **Next** — SOC 2, enterprise SSO, Microsoft OAuth calendar, mobile battle card.
 
 ## 7. Compliance guardrails
 
