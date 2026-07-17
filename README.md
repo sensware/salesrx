@@ -1,76 +1,98 @@
-# SalesRx
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="public/brand/logo-lockup-dark.svg">
+  <img src="public/brand/logo-lockup-light.svg" alt="SalesRx" width="340">
+</picture>
 
-AI sales intelligence — walk into every prospect meeting prepared.
+**Walk in already knowing.**
 
-A rep sets up their profile (industry, vertical, competitors, differentiator). SalesRx then researches any prospect **live on the web** and generates a personalized pre-meeting brief: buying signals, likely stack and incumbent, decision map, rapport intel, objection forecast, and **pain points mapped to NEPQ question ladders** (Situation → Problem awareness → Consequence → Solution awareness).
+![version](https://img.shields.io/badge/version-0.3.0-0E8C55?labelColor=0B1F3A)
+![stack](https://img.shields.io/badge/Next.js_15_·_TypeScript-0B1F3A?labelColor=0B1F3A&color=41586E)
+![ai](https://img.shields.io/badge/Anthropic_API_+_web_search-0E8C55?labelColor=0B1F3A)
+![deploy](https://img.shields.io/badge/Docker-self--hostable-D9A441?labelColor=0B1F3A)
+
+SalesRx is a corner team for every sales rep. It researches any prospect live on the web, personalizes the game plan to the rep's own edge, and remembers every meeting — so brief #2 is smarter than brief #1.
+
+A rep sets up their profile once (industry, vertical, competitors, differentiator). SalesRx then generates a one-page pre-meeting brief for any prospect: buying signals with sources, likely stack and incumbent, decision map, rapport intel, objection forecast — and **pain points mapped to NEPQ question ladders** (Situation → Problem awareness → Consequence → Solution awareness).
 
 ## How it works
 
 ```
-Rep profile + prospect input
+Rep profile + prospect input (or auto-detected from calendar)
         │
         ▼
 POST /api/research
-        │  Claude (Anthropic API) + web search tool
-        │  → researches news, hiring, stack, people (with citations)
-        │  → synthesizes brief JSON personalized to the rep's moat
+        │  Claude + live web search  →  cited signals, never invented
+        │  TheirStack (optional)     →  verified hiring + technographic data
+        │  Account memory            →  what happened in previous meetings
         ▼
-Brief UI (Next.js) — signals, NEPQ ladders, decision map, objections, sources
+The Brief — signals · NEPQ ladders · decision map · objections · fit score
+        │
+        ▼
+Log meeting notes → outcomes + follow-up email draft → memory for next time
 ```
 
-- **Every claim carries a source** — the brief links citations; reps verify before quoting.
-- **NEPQ ladders are evidence-linked** — each pain point cites the signal it was derived from, with a confidence label instead of invented specifics.
-- **File cache** (`data/cache/`, 24h TTL) avoids re-paying for repeat research.
+Three rules the pipeline never breaks: every claim carries a **source link**, thin evidence gets a **confidence label** instead of invented specifics, and pain points must cite the **signal they came from**.
 
-## Setup
+## Quick start
 
 ```bash
+git clone https://github.com/sensware/salesrx.git && cd salesrx
 npm install
-cp .env.example .env      # add your ANTHROPIC_API_KEY
-npm run dev               # http://localhost:3000
+cp .env.example .env      # add ANTHROPIC_API_KEY
+npm run dev               # → http://localhost:3000
 ```
 
-## Config (.env)
+Or with Docker (includes nightly watchlist + auto-brief cron):
+
+```bash
+docker compose up -d --build
+```
+
+Full deployment guide: [`docs/deploy-docker.md`](docs/deploy-docker.md)
+
+## Configuration
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | — | required |
-| `THEIRSTACK_API_KEY` | — | optional: verified hiring + technographic signals; falls back to LLM web search |
-| `CALENDAR_ICS_URL` | — | optional: secret ICS feed for upcoming-meeting detection + auto-brief |
+| `ANTHROPIC_API_KEY` | — | **required** |
+| `THEIRSTACK_API_KEY` | — | verified hiring + technographic signals; falls back to LLM web search |
+| `CALENDAR_ICS_URL` | — | secret iCal link → upcoming-meeting detection + auto-brief (no OAuth) |
 | `OWN_EMAIL_DOMAINS` | — | your company domain(s), so internal attendees are ignored |
-| `HUBSPOT_ACCESS_TOKEN` | — | optional: sync briefs + meeting logs to HubSpot as company notes |
+| `HUBSPOT_ACCESS_TOKEN` | — | sync briefs + meeting logs to HubSpot as company notes |
 | `SALESRX_MODEL` | `claude-sonnet-5` | model for research + synthesis |
 | `SALESRX_MAX_WEB_SEARCHES` | `8` | web-search budget per brief |
 | `SALESRX_CACHE_TTL_HOURS` | `24` | brief cache freshness |
 
-## v1.1 features
+Every integration is key-gated with a graceful fallback — no key, no breakage.
 
-- **Structured signals** — with a TheirStack key, briefs are grounded in job-posting data (open roles + detected tech stack with confidence levels) injected into the research agent as verified ground truth.
-- **Watchlist + alerts** — add a prospect from its brief; "Check for new signals" runs a cheap delta search (3 web searches, only NEW items vs. known signals). For nightly alerts, cron a POST to `/api/watchlist/refresh`:
-  ```
-  0 6 * * * curl -X POST http://localhost:3000/api/watchlist/refresh
-  ```
+## Features by version
 
-## v1.2 features
+**v1.0 — the brief.** Live AI research with citations, NEPQ question ladders, positioning coaching from the rep profile.
 
-- **Post-meeting memory loop** — paste raw notes after a meeting; SalesRx extracts outcomes, next steps, and objections heard, drafts your follow-up email, and updates a rolling account memory that is injected into every future brief for that prospect. Brief #2 knows what happened in meeting #1.
-- **Calendar auto-brief** — set `CALENDAR_ICS_URL` (secret iCal link, no OAuth) and the app shows upcoming external meetings with one-click "Prep brief". A cron on `/api/calendar/autoprep` pre-generates briefs for the next 24h of meetings so they're instant.
-- **HubSpot sync** — with a private-app token, "Sync brief to CRM" and "Sync meeting to CRM" attach formatted notes to the (auto-created) company record.
+**v1.1 — signals.** Verified job-posting technographics (TheirStack), watchlist with delta-only alerts (`POST /api/watchlist/refresh`, cron-able).
 
-## Roadmap (see docs/pipeline-spec.md)
+**v1.2 — workflow.** Calendar auto-brief via secret ICS feed, one-click prep for upcoming external meetings (`POST /api/calendar/autoprep` pre-briefs the next 24h), HubSpot private-app sync, and the post-meeting memory loop: raw notes → outcomes, next steps, follow-up email draft, rolling account memory.
 
-- ~~v1.1 — technographics + hiring-signal APIs, watchlist alerts~~ ✓
-- ~~v1.2 — calendar auto-brief, CRM sync, post-meeting notes → account memory~~ ✓
-- v2 — multi-rep teams, Postgres migration, Google/Microsoft OAuth calendar, Salesforce
+**v2 — next.** Multi-rep teams with shared memory, Postgres, OAuth calendars, Salesforce.
 
 ## Project structure
 
 ```
-app/page.tsx              3-screen flow: profile → research → brief
-app/api/tips/route.ts     coaching tips from rep profile
-app/api/research/route.ts live research pipeline (Claude + web search)
-lib/prompts.ts            research & NEPQ generation prompts
-lib/types.ts              Brief schema shared by API and UI
-lib/cache.ts              file-based response cache
-docs/pipeline-spec.md     full architecture spec
+app/page.tsx               3-screen flow: profile → research → brief
+app/api/research           live research pipeline
+app/api/meetings           notes → extraction → account memory
+app/api/calendar[/autoprep] ICS meetings + cron pre-briefing
+app/api/watchlist[/refresh] signal alerts (delta-only)
+app/api/crm/sync           HubSpot company notes
+lib/                       prompts, research core, signals, memory, cache
+docs/                      pipeline spec · deploy guide · brand guidelines · pitch deck
+public/brand/              logo assets (The Advance)
 ```
+
+## Brand
+
+The design system lives in [`docs/brand-guidelines.html`](docs/brand-guidelines.html): Command Navy `#0B1F3A` (authority), Vanguard Green `#0E8C55` (the one action that matters), Medal Gold `#D9A441` (earned wins only), Valor Red `#C8102E` (warnings only). One rule above all: the brief must make a rep feel more prepared walking into the room.
+
+---
+
+Luke Jian · jian.lucian@gmail.com · Confidential — all rights reserved.
