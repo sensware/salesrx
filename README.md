@@ -5,7 +5,7 @@
 
 **Walk in already knowing.**
 
-![version](https://img.shields.io/badge/version-2.0.0-0E8C55?labelColor=0B1F3A)
+![version](https://img.shields.io/badge/version-2.1.0-0E8C55?labelColor=0B1F3A)
 ![stack](https://img.shields.io/badge/Next.js_15_·_TypeScript-0B1F3A?labelColor=0B1F3A&color=41586E)
 ![ai](https://img.shields.io/badge/Anthropic_API_+_web_search-0E8C55?labelColor=0B1F3A)
 ![deploy](https://img.shields.io/badge/Docker-self--hostable-D9A441?labelColor=0B1F3A)
@@ -60,6 +60,8 @@ Full deployment guide: [`docs/deploy-docker.md`](docs/deploy-docker.md)
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | — | per-user Google Calendar OAuth (ICS stays as fallback) |
 | `SALESFORCE_INSTANCE_URL` / `SALESFORCE_ACCESS_TOKEN` | — | Salesforce sync (Account upsert + activity notes) |
 | `THEIRSTACK_API_KEY` | — | verified hiring + technographic signals; falls back to LLM web search |
+| `SALESRX_EDGAR_UA` | generic | contact string the SEC requires in EDGAR requests (set your email) |
+| `API_NINJAS_KEY` | — | earnings-call transcript excerpts in briefs (public companies) |
 | `CALENDAR_ICS_URL` | — | secret iCal link → upcoming-meeting detection + auto-brief (no OAuth) |
 | `OWN_EMAIL_DOMAINS` | — | your company domain(s), so internal attendees are ignored |
 | `HUBSPOT_ACCESS_TOKEN` | — | sync briefs + meeting logs to HubSpot as company notes |
@@ -76,6 +78,8 @@ Every integration is key-gated with a graceful fallback — no key, no breakage.
 **v1.1 — signals.** Verified job-posting technographics (TheirStack), watchlist with delta-only alerts (`POST /api/watchlist/refresh`, cron-able).
 
 **v1.2 — workflow.** Calendar auto-brief via secret ICS feed, one-click prep for upcoming external meetings (`POST /api/calendar/autoprep` pre-briefs the next 24h), HubSpot private-app sync, and the post-meeting memory loop: raw notes → outcomes, next steps, follow-up email draft, rolling account memory.
+
+**v2.1 — primary sources.** Briefs are now grounded in the official record, not just web search: SEC EDGAR full-text search surfaces recent 8-K/10-K/10-Q filings (8-K exhibits usually contain the earnings press release), Google News RSS captures press coverage with wire releases flagged `[PR]` — both free, no keys. With an `API_NINJAS_KEY`, earnings-call transcript excerpts (selected around the rep's vertical keywords) feed pain points and NEPQ consequence questions with executives' verbatim words. Everything degrades gracefully: private company, no filings → the collectors simply contribute nothing.
 
 **v2.0 — teams.** Set `DATABASE_URL` and SalesRx becomes multi-user: register/login (JWT sessions), workspaces with invite codes, and **shared account memory** — any rep's logged meeting improves the whole team's next brief on that account. Postgres replaces file storage (schema bootstraps itself), Google Calendar connects per-user via OAuth (ICS feed remains the zero-setup fallback), and CRM sync now targets Salesforce alongside HubSpot. Without `DATABASE_URL`, everything still runs exactly as v1.2 — single rep, file storage, no login.
 

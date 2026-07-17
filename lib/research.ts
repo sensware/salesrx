@@ -2,6 +2,7 @@
 import { client, MODEL, MAX_SEARCHES, extractJson, textOf } from "./anthropic";
 import { researchSystemPrompt, researchUserPrompt } from "./prompts";
 import { getStructuredSignals, signalsToPromptBlock } from "./theirstack";
+import { primarySourcesBlock } from "./primary-sources";
 import { getOrCreateAccount, updateAccount, memoryToPromptBlock } from "./accounts";
 import { cacheGet, cacheSet } from "./cache";
 import type { Brief, ProspectInput, RepProfile } from "./types";
@@ -24,8 +25,15 @@ export async function runResearch(
   if (cached) return { brief: cached, cached: true };
 
   // v1.1: structured hiring + technographic signals (optional, key-gated)
-  const structured = await getStructuredSignals(prospect);
-  const structuredBlock = structured ? signalsToPromptBlock(structured) : undefined;
+  // v2.1: primary sources — SEC filings, press coverage, earnings-call excerpts
+  const [structured, primary] = await Promise.all([
+    getStructuredSignals(prospect),
+    primarySourcesBlock(prospect, profile),
+  ]);
+  const structuredBlock =
+    [structured ? signalsToPromptBlock(structured) : undefined, primary]
+      .filter(Boolean)
+      .join("\n\n") || undefined;
 
   // v1.2/v2.0: workspace-shared account memory
   const account = await getOrCreateAccount(prospect.name, prospect.domain, workspaceId);
