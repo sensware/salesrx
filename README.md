@@ -115,4 +115,4 @@ The design system lives in [`docs/brand-guidelines.html`](docs/brand-guidelines.
 
 ---
 
-Luke Jian · jian.lucian@gmail.com · Confidential — all rights reserved.
+Luke Jian · Confidential — all rights reserved.
