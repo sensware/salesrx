@@ -19,7 +19,7 @@ services:
       - salesrx
     command: >
       sh -c "apk add --no-cache curl >/dev/null &&
-             echo '0 3 * * * curl -s -X POST http://salesrx:3000/api/watchlist/refresh' | crontab - &&
+             printf '0 3 * * * curl -s -X POST http://salesrx:3000/api/watchlist/refresh\n0 5 * * * curl -s -X POST http://salesrx:3000/api/calendar/autoprep\n' | crontab - &&
              crond -f -l 8"
     restart: unless-stopped
 

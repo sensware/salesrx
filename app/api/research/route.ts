@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { client, MODEL, MAX_SEARCHES, extractJson, textOf } from "@/lib/anthropic";
-import { researchSystemPrompt, researchUserPrompt } from "@/lib/prompts";
-import { getStructuredSignals, signalsToPromptBlock } from "@/lib/theirstack";
-import { cacheGet, cacheSet } from "@/lib/cache";
-import type { Brief, ProspectInput, RepProfile } from "@/lib/types";
+import { runResearch } from "@/lib/research";
+import type { ProspectInput, RepProfile } from "@/lib/types";
 
 export const maxDuration = 300; // research can take a while
 
@@ -22,35 +19,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const cacheKey = `brief:${prospect.name}|${prospect.domain}|${prospect.contact}|${profile?.moat}`;
-  const cached = cacheGet<Brief>(cacheKey);
-  if (cached) return NextResponse.json({ brief: cached, cached: true });
-
   try {
-    // v1.1: structured hiring + technographic signals (optional, key-gated)
-    const structured = await getStructuredSignals(prospect);
-    const structuredBlock = structured ? signalsToPromptBlock(structured) : undefined;
-
-    const anthropic = client();
-    const msg = await anthropic.messages.create({
-      model: MODEL,
-      max_tokens: 8000,
-      system: researchSystemPrompt(),
-      messages: [
-        { role: "user", content: researchUserPrompt(profile, prospect, structuredBlock) },
-      ],
-      tools: [
-        {
-          type: "web_search_20250305",
-          name: "web_search",
-          max_uses: MAX_SEARCHES,
-        },
-      ],
-    });
-
-    const brief = extractJson<Brief>(textOf(msg));
-    cacheSet(cacheKey, brief);
-    return NextResponse.json({ brief, cached: false });
+    const result = await runResearch(profile, prospect);
+    return NextResponse.json(result);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Research failed";
     return NextResponse.json({ error: message }, { status: 500 });

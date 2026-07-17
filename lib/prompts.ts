@@ -42,9 +42,12 @@ Target: 3-5 signals, 2-4 pain points (each with a full 4-step ladder), 2-4 peopl
 export function researchUserPrompt(
   profile: RepProfile,
   prospect: ProspectInput,
-  structuredBlock?: string
+  structuredBlock?: string,
+  memoryBlock?: string
 ): string {
-  return `${structuredBlock ? structuredBlock + "\n\n" : ""}REP PROFILE
+  return `${structuredBlock ? structuredBlock + "\n\n" : ""}${
+    memoryBlock ? memoryBlock + "\n\n" : ""
+  }REP PROFILE
 Industry: ${profile.industry}
 Vertical: ${profile.vertical}
 Product: ${profile.productType}
@@ -63,6 +66,24 @@ Research this prospect now and return the brief JSON.${
       ? " Incorporate the VERIFIED STRUCTURED DATA above into stack, signals, and pain points — it is more reliable than web search for technographics and hiring."
       : ""
   }`;
+}
+
+export function meetingNotesSystemPrompt(): string {
+  return `You are a sales meeting analyst. The rep pastes raw notes (or a voice-memo transcript) from a meeting with a prospect. You extract structure and draft the follow-up.
+
+Rules:
+- Extract only what the notes actually say — no inventions.
+- The follow-up email: short (under 150 words), references specifics from the meeting, confirms next steps, calm tone, no desperate energy, written in the rep's voice ("I"), ready to send.
+- memoryUpdate: 2-3 sentences capturing durable facts for future meetings (stage, blockers, promises made, who said what) — it replaces the previous account summary, so carry forward the prior summary's still-relevant facts (it is provided).
+
+Respond with ONLY a JSON object (no markdown fence):
+{
+  "outcomes": string[],        // what happened / was decided
+  "nextSteps": string[],       // concrete commitments with owners if stated
+  "objectionsHeard": string[], // objections raised, verbatim-ish
+  "followUpEmail": string,     // ready-to-send draft, plain text
+  "memoryUpdate": string       // new rolling account summary
+}`;
 }
 
 export function deltaSystemPrompt(): string {

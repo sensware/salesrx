@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { Brief, CoachingTip, ProspectInput, RepProfile } from "@/lib/types";
 import type { WatchItem } from "@/lib/watchlist";
+import type { CalendarMeeting } from "@/lib/calendar";
+import type { MeetingRecord } from "@/lib/accounts";
 
 type Screen = "profile" | "search" | "loading" | "brief";
 
@@ -47,6 +49,56 @@ export default function Home() {
   const [watchlist, setWatchlist] = useState<WatchItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [watchAdded, setWatchAdded] = useState(false);
+  const [calMeetings, setCalMeetings] = useState<CalendarMeeting[] | null>(null);
+  const [notes, setNotes] = useState("");
+  const [logging, setLogging] = useState(false);
+  const [meetingResult, setMeetingResult] = useState<MeetingRecord | null>(null);
+  const [crmStatus, setCrmStatus] = useState<string | null>(null);
+
+  async function loadCalendar() {
+    try {
+      const res = await fetch("/api/calendar");
+      const data = await res.json();
+      if (res.ok && data.configured) setCalMeetings(data.meetings);
+    } catch {}
+  }
+
+  async function logMeeting() {
+    if (!brief || !notes.trim()) return;
+    setLogging(true);
+    setMeetingResult(null);
+    try {
+      const res = await fetch("/api/meetings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: brief.company, domain: prospect.domain, notes }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Meeting analysis failed");
+      setMeetingResult(data.meeting);
+      setNotes("");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Meeting analysis failed");
+    } finally {
+      setLogging(false);
+    }
+  }
+
+  async function syncToCrm(payload: { brief?: Brief; noteText?: string }) {
+    if (!brief) return;
+    setCrmStatus("Syncing…");
+    try {
+      const res = await fetch("/api/crm/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: brief.company, domain: prospect.domain, ...payload }),
+      });
+      const data = await res.json();
+      setCrmStatus(res.ok ? "✓ Synced to HubSpot" : data.error);
+    } catch {
+      setCrmStatus("CRM sync failed");
+    }
+  }
 
   async function loadWatch() {
     try {
@@ -102,8 +154,15 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (screen === "search") loadWatch();
-    if (screen === "brief") setWatchAdded(false);
+    if (screen === "search") {
+      loadWatch();
+      loadCalendar();
+    }
+    if (screen === "brief") {
+      setWatchAdded(false);
+      setMeetingResult(null);
+      setCrmStatus(null);
+    }
     if (screen === "loading") {
       setLoadStep(0);
       timerRef.current = setInterval(
@@ -120,6 +179,12 @@ export default function Home() {
 
   async function generateTips() {
     localStorage.setItem("salesrx.profile", JSON.stringify(profile));
+    // also persist server-side so calendar auto-prep can use it
+    fetch("/api/profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ profile }),
+    }).catch(() => {});
     setTipsLoading(true);
     setError(null);
     try {
@@ -138,14 +203,15 @@ export default function Home() {
     }
   }
 
-  async function research() {
+  async function research(override?: ProspectInput) {
+    const target = override || prospect;
     setError(null);
     setScreen("loading");
     try {
       const res = await fetch("/api/research", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profile, prospect }),
+        body: JSON.stringify({ profile, prospect: target }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Research failed");
@@ -301,7 +367,7 @@ export default function Home() {
           </div>
           <button
             className="btn"
-            onClick={research}
+            onClick={() => research()}
             disabled={!prospect.name && !prospect.domain}
           >
             🔎 Research prospect
@@ -310,6 +376,52 @@ export default function Home() {
             ← Edit profile
           </button>
           {error && <div className="err">{error}</div>}
+        </section>
+      )}
+
+      {screen === "search" && calMeetings && calMeetings.length > 0 && (
+        <section className="card">
+          <h2>📅 Upcoming meetings (next 7 days)</h2>
+          {calMeetings.map((m, i) => (
+            <div
+              key={i}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "9px 0",
+                borderBottom: "1px solid var(--border)",
+                fontSize: 13.5,
+                flexWrap: "wrap",
+              }}
+            >
+              <b>{m.title}</b>
+              <span style={{ color: "var(--muted)", fontSize: 12 }}>
+                {new Date(m.start).toLocaleString()}
+              </span>
+              {m.domains.map((d) => (
+                <span key={d} className="tag blue">
+                  {d}
+                </span>
+              ))}
+              <button
+                className="btn small"
+                style={{ marginLeft: "auto" }}
+                onClick={() => {
+                  const p = {
+                    name: m.domains[0].split(".")[0],
+                    domain: m.domains[0],
+                    location: "",
+                    contact: "",
+                  };
+                  setProspect(p);
+                  research(p);
+                }}
+              >
+                Prep brief →
+              </button>
+            </div>
+          ))}
         </section>
       )}
 
@@ -565,12 +677,85 @@ export default function Home() {
           )}
 
           <section className="card">
+            <h2>📝 Log meeting notes</h2>
+            <p className="sub">
+              Paste raw notes or a voice-memo transcript after the meeting. SalesRx extracts
+              outcomes and next steps, drafts your follow-up email, and remembers everything for
+              the next brief on this account.
+            </p>
+            <textarea
+              rows={4}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="e.g. Met with Dana and Marcus. Concerned about rollout time. Marcus wants ROI numbers by Friday. Dana hinted the renewal decision moved up to October…"
+            />
+            <button className="btn small" style={{ marginTop: 12 }} onClick={logMeeting} disabled={logging || !notes.trim()}>
+              {logging ? "Analyzing…" : "Analyze & save"}
+            </button>
+            {meetingResult && (
+              <div style={{ marginTop: 16 }}>
+                <div className="grid2">
+                  <div>
+                    <h2>✅ Outcomes</h2>
+                    {meetingResult.outcomes.map((o, i) => (
+                      <div className="tip" key={i}>
+                        <span className="ico">•</span>
+                        <span>{o}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div>
+                    <h2>➡️ Next steps</h2>
+                    {meetingResult.nextSteps.map((s, i) => (
+                      <div className="tip" key={i}>
+                        <span className="ico">•</span>
+                        <span>{s}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <h2 style={{ marginTop: 12 }}>✉️ Follow-up email draft</h2>
+                <div
+                  className="tip"
+                  style={{ whiteSpace: "pre-wrap", display: "block" }}
+                >
+                  {meetingResult.followUpEmail}
+                </div>
+                <button
+                  className="btn ghost small"
+                  onClick={() => navigator.clipboard.writeText(meetingResult.followUpEmail)}
+                >
+                  📋 Copy email
+                </button>{" "}
+                <button
+                  className="btn ghost small"
+                  onClick={() =>
+                    syncToCrm({
+                      noteText: `Outcomes: ${meetingResult.outcomes.join("; ")}\nNext steps: ${meetingResult.nextSteps.join("; ")}`,
+                    })
+                  }
+                >
+                  ↗ Sync meeting to CRM
+                </button>
+              </div>
+            )}
+          </section>
+
+          <section className="card">
             <button className="btn small" onClick={addToWatchlist} disabled={watchAdded}>
               {watchAdded ? "✓ On your watchlist" : "🔔 Add to watchlist"}
+            </button>{" "}
+            <button className="btn small ghost" onClick={() => syncToCrm({ brief })}>
+              ↗ Sync brief to CRM
             </button>{" "}
             <button className="btn ghost small" onClick={() => setScreen("search")}>
               ← Research another prospect
             </button>
+            {crmStatus && (
+              <span style={{ marginLeft: 10, fontSize: 12.5, color: "var(--muted)" }}>
+                {crmStatus}
+              </span>
+            )}
           </section>
           <p className="footer-note">
             AI-researched from public sources — verify figures before quoting them in a meeting.
