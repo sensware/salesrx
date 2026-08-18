@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runResearch } from "@/lib/research";
 import { getCtx, unauthorized } from "@/lib/auth";
+import { JsonFormatError } from "@/lib/anthropic";
 import type { ProspectInput, RepProfile } from "@/lib/types";
 
 export const maxDuration = 300; // research can take a while
@@ -27,7 +28,12 @@ export async function POST(req: NextRequest) {
     const result = await runResearch(profile, prospect, ctx.workspaceId, ctx);
     return NextResponse.json(result);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Research failed";
+    const message =
+      err instanceof JsonFormatError
+        ? "The AI response came back malformed twice in a row — please try again."
+        : err instanceof Error
+          ? err.message
+          : "Research failed";
     const status = (err as { status?: number })?.status === 429 ? 429 : 500;
     return NextResponse.json({ error: message }, { status });
   }

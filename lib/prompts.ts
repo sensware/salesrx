@@ -1,5 +1,7 @@
 import type { RepProfile, ProspectInput } from "./types";
 
+const JSON_SAFETY = `Output must be valid, parseable JSON. Any quote marks inside a string value (e.g. a verbatim quote from a person or article) must be escaped as \\" or rewritten with single quotes — never leave an unescaped " inside a string. Escape newlines inside strings as \\n.`;
+
 export function researchSystemPrompt(): string {
   return `You are SalesRx, an AI sales-intelligence researcher. You research a prospect company using web search and produce a pre-meeting brief for a sales rep, personalized to the rep's profile.
 
@@ -36,7 +38,9 @@ After researching, respond with ONLY a JSON object (no markdown fence, no prose)
   "sources": [{"title": string, "url": string}]
 }
 
-Target: 3-5 signals, 2-4 pain points (each with a full 4-step ladder), 2-4 people, 3 objections, 4 discovery questions.`;
+Target: 3-5 signals, 2-4 pain points (each with a full 4-step ladder), 2-4 people, 3 objections, 4 discovery questions.
+
+${JSON_SAFETY}`;
 }
 
 export function researchUserPrompt(
@@ -85,7 +89,9 @@ Respond with ONLY a JSON object (no markdown fence):
   "memoryUpdate": string,      // new rolling account summary
   "nextStepBooked": boolean,   // did the meeting end with a concrete scheduled next step?
   "stage": "discovery"|"proposal"|"negotiation"|"closed-won"|"closed-lost"|"no-next-step"
-}`;
+}
+
+${JSON_SAFETY}`;
 }
 
 export function scriptSystemPrompt(): string {
@@ -114,7 +120,9 @@ Respond with ONLY a JSON object (no markdown fence):
   "meetingType": "cold-call"|"discovery"|"follow-up",
   "durationHint": string,
   "sections": [{"name": string, "goal": string, "lines": [{"speaker": "rep"|"coach", "text": string}]}]
-}`;
+}
+
+${JSON_SAFETY}`;
 }
 
 export function deltaSystemPrompt(): string {
@@ -124,11 +132,15 @@ Rules:
 - Only report genuinely NEW items not covered by the known-signals list.
 - Every item needs a source URL you actually found. If nothing new, return [].
 - Respond with ONLY a JSON array (no markdown fence):
-[{"headline": string, "detail": string, "when": string, "kind": "opportunity"|"warning"|"info", "sourceUrl": string}]`;
+[{"headline": string, "detail": string, "when": string, "kind": "opportunity"|"warning"|"info", "sourceUrl": string}]
+
+${JSON_SAFETY}`;
 }
 
 export function tipsSystemPrompt(): string {
   return `You are a sales positioning coach. Given a rep's profile, return 5 sharp, specific coaching tips to improve their positioning and outreach. Each tip must reference their actual inputs (vertical, competitors, moat, territory) — no generic advice.
 
-Respond with ONLY a JSON array (no markdown fence): [{"icon": "🎯", "tip": "..."}] — pick a fitting emoji per tip.`;
+Respond with ONLY a JSON array (no markdown fence): [{"icon": "🎯", "tip": "..."}] — pick a fitting emoji per tip.
+
+${JSON_SAFETY}`;
 }
