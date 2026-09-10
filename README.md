@@ -5,7 +5,7 @@
 
 **Walk in already knowing.**
 
-![version](https://img.shields.io/badge/version-2.6.0-0E8C55?labelColor=0B1F3A)
+![version](https://img.shields.io/badge/version-2.7.0-0E8C55?labelColor=0B1F3A)
 ![stack](https://img.shields.io/badge/Next.js_15_·_TypeScript-0B1F3A?labelColor=0B1F3A&color=41586E)
 ![ai](https://img.shields.io/badge/Anthropic_API_+_web_search-0E8C55?labelColor=0B1F3A)
 ![deploy](https://img.shields.io/badge/Docker-self--hostable-D9A441?labelColor=0B1F3A)
@@ -57,7 +57,9 @@ Full deployment guide: [`docs/deploy-docker.md`](docs/deploy-docker.md)
 |---|---|---|
 | `ANTHROPIC_API_KEY` | — | **required** |
 | `DATABASE_URL` | — | **v2 team mode:** Postgres storage, login, shared workspace memory. Unset = single-user file mode |
-| `AUTH_SECRET` | derived | session-signing secret for team mode |
+| `AUTH_SECRET` | derived | Auth.js session-signing key for team mode (`npx auth secret`); derived from `DATABASE_URL` if unset — set a real one in prod |
+| `SALESRX_LOGIN_MAX_ATTEMPTS` | `5` | failed sign-ins before an account is temporarily locked (team mode) |
+| `SALESRX_LOGIN_LOCKOUT_MINUTES` | `15` | how long that lock lasts |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | — | per-user Google Calendar OAuth (ICS stays as fallback) |
 | `SALESFORCE_INSTANCE_URL` / `SALESFORCE_ACCESS_TOKEN` | — | Salesforce sync (Account upsert + activity notes) |
 | `THEIRSTACK_API_KEY` | — | verified hiring + technographic signals; falls back to LLM web search |
@@ -95,20 +97,22 @@ Every integration is key-gated with a graceful fallback — no key, no breakage.
 
 **v2.6 — in the room.** Pocket brief at `/pocket` — installable PWA rendering the last brief from device storage, built for parking lots; an audio "corner talk" of any brief via browser TTS (zero API cost); and a Slack morning digest (`SLACK_WEBHOOK_URL`) with today's external meetings and fresh watchlist signals, cron'd weekdays at 06:30 in compose.
 
-**Next** — see [`docs/roadmap.md`](docs/roadmap.md): the Dojo (AI roleplay practice against the actual brief), then enterprise (SOC 2/SSO, Microsoft calendar).
+**v2.7 — hardened auth.** Team-mode auth moves to [Auth.js](https://authjs.dev): encrypted-JWT sessions, CSRF-protected endpoints, well-tested internals — same email/password + invite-code flow, no UI change. New: **login lockout** — repeated failed sign-ins for an account are temporarily blocked (`SALESRX_LOGIN_MAX_ATTEMPTS` / `SALESRX_LOGIN_LOCKOUT_MINUTES`, default 5 / 15 min), with looser per-IP throttles on login and registration. Local single-user mode is untouched — still no login. Because the session cookie format changed, existing team users sign in once more after upgrading.
+
+**Next** — see [`docs/roadmap.md`](docs/roadmap.md): the Dojo (AI roleplay practice against the actual brief), then enterprise (SOC 2/SSO, Microsoft calendar — Auth.js makes SSO providers a config change).
 
 ## Project structure
 
 ```
 app/page.tsx                flow: (login) → profile → research → brief
-app/api/auth, /workspace    v2.0 accounts, sessions, invite codes
+app/api/auth, /workspace    Auth.js sessions, accounts, invite codes, login lockout
 app/api/research            live research pipeline
 app/api/meetings            notes → extraction → shared account memory
 app/api/calendar[/autoprep] Google OAuth or ICS meetings + cron pre-briefing
 app/api/watchlist[/refresh] signal alerts (delta-only, all-workspace cron sweep)
 app/api/crm/sync            HubSpot + Salesforce notes
 app/api/integrations/google OAuth connect flow
-lib/                        prompts · research core · db (Postgres/file) · auth
+lib/                        prompts · research core · db (Postgres/file) · auth/ (Auth.js + rate-limit)
                             theirstack · edgar · newsfeed · transcripts · gcal · salesforce
 docs/                       pipeline spec · deploy guide · brand guidelines · pitch deck · business plan
 public/brand/               logo assets (The Advance)

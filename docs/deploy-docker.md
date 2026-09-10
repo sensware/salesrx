@@ -33,6 +33,8 @@ ANTHROPIC_API_KEY=sk-ant-...
 
 Optional: `THEIRSTACK_API_KEY` (verified hiring/technographic signals), `SALESRX_MODEL`, `SALESRX_MAX_WEB_SEARCHES`, `SALESRX_CACHE_TTL_HOURS`.
 
+**Team mode** (`DATABASE_URL` set): also set `AUTH_SECRET` to a real random string (`npx auth secret` generates one) — Auth.js signs sessions with it, and a stable value keeps sessions valid across restarts. Login lockout is on by default; tune it with `SALESRX_LOGIN_MAX_ATTEMPTS` / `SALESRX_LOGIN_LOCKOUT_MINUTES`.
+
 The `.env` file is read at **runtime**, never baked into the image — `.dockerignore` excludes it, so the image is safe to share or push to a registry.
 
 ## Step 2 — Build the image
@@ -69,7 +71,7 @@ Open http://localhost:3000, set up a rep profile, and run one prospect research 
 
 ## Step 5 (recommended) — Compose instead of raw `docker run`
 
-The repo ships a `docker-compose.yml` that runs the app, **Postgres (v2.0 team mode — login, workspaces, shared memory; comment out `DATABASE_URL` in the compose file to run single-user instead)**, plus a tiny cron sidecar that refreshes the watchlist nightly at 03:00 UTC and pre-briefs tomorrow's meetings at 05:00:
+The repo ships a `docker-compose.yml` that runs the app, **Postgres (team mode — Auth.js login with lockout, workspaces, shared memory; comment out `DATABASE_URL` in the compose file to run single-user instead)**, plus a tiny cron sidecar that refreshes the watchlist nightly at 03:00 UTC and pre-briefs tomorrow's meetings at 05:00:
 
 ```bash
 docker compose up -d --build
@@ -92,6 +94,8 @@ docker compose up -d --build     # rebuilds and swaps the container
 ```
 
 The volume is untouched — cache and watchlist carry over. (Raw-Docker equivalent: `docker build -t salesrx:latest . && docker rm -f salesrx` then re-run step 3.)
+
+Upgrading **to v2.7 or later** from an earlier team-mode deploy: the session cookie format changed with the Auth.js move, so everyone signs in once more after the swap. Accounts, workspaces, and memory are unaffected.
 
 ## Operations cheat-sheet
 

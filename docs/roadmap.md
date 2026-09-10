@@ -15,6 +15,7 @@
 | v2.3 | Rep enablement | NEPQ call-script generator: opener → ladders with real pains → objections → close, with coach notes for new reps |
 | v2.5 | Proof | Outcome analytics: structured meeting outcomes (next step, stage), next-step rate, brief→meeting conversion, objection leaderboard, per-rep stats |
 | v2.6 | In the room | Pocket brief PWA (offline last brief), audio "corner talk" (browser TTS), Slack morning digest |
+| v2.7 | Hardened auth | Team auth on Auth.js (encrypted-JWT sessions, CSRF), login lockout + per-IP throttles |
 
 ## Next up
 
@@ -22,7 +23,7 @@
 Roleplay mode: the AI plays the prospect **using the actual brief** — their pains, their objections, their personality signals — and the new rep practices the call before making it. After each round: a scorecard (did they pitch too early? skip the consequence question? talk more than 30%?) plus drill suggestions. Pairs directly with v2.3: script → practice → real call.
 
 ### v3.0 — Enterprise
-SOC 2, SSO/SAML, Microsoft OAuth calendar, roles & territories, audit logs, annual contracts. Gated on design-partner traction, not calendar dates.
+SOC 2, SSO/SAML, Microsoft OAuth calendar, roles & territories, audit logs, annual contracts. Gated on design-partner traction, not calendar dates. (v2.7's Auth.js move turns SSO/SAML into a provider config rather than an auth rewrite.)
 
 ## Candidate ideas (unscheduled — for discussion)
 
