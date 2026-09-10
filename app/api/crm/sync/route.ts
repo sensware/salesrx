@@ -25,7 +25,7 @@ Win story angle: ${brief.winStoryHint}`;
 
 /** Sync a brief or meeting summary to every configured CRM (HubSpot, Salesforce). */
 export async function POST(req: NextRequest) {
-  const ctx = await getCtx(req);
+  const ctx = await getCtx();
   if (!ctx) return unauthorized();
 
   if (!hubspotConfigured() && !salesforceConfigured()) {

@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
   if (!googleConfigured()) {
     return NextResponse.json({ error: "GOOGLE_CLIENT_ID/SECRET not configured" }, { status: 400 });
   }
-  const ctx = await getCtx(req);
+  const ctx = await getCtx();
   if (!ctx) return NextResponse.redirect(new URL("/", req.url));
   const secret = new TextEncoder().encode(
     process.env.AUTH_SECRET ||

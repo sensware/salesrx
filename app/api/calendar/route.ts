@@ -5,7 +5,7 @@ import { getCtx, unauthorized, getGoogleToken } from "@/lib/auth";
 
 /** Upcoming external meetings — Google Calendar (if connected) else ICS feed. */
 export async function GET(req: NextRequest) {
-  const ctx = await getCtx(req);
+  const ctx = await getCtx();
   if (!ctx) return unauthorized();
   try {
     const refresh = await getGoogleToken(ctx.userId);

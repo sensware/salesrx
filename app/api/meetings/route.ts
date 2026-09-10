@@ -11,7 +11,7 @@ export const maxDuration = 120;
 /** Log meeting notes: extracts outcomes/next steps, drafts the follow-up
  *  email, and updates the workspace-shared account memory. */
 export async function POST(req: NextRequest) {
-  const ctx = await getCtx(req);
+  const ctx = await getCtx();
   if (!ctx) return unauthorized();
 
   let body: {
@@ -89,7 +89,7 @@ ${body.notes}`,
 
 /** List the workspace's accounts with memory. */
 export async function GET(req: NextRequest) {
-  const ctx = await getCtx(req);
+  const ctx = await getCtx();
   if (!ctx) return unauthorized();
   return NextResponse.json({ accounts: await loadAccounts(ctx.workspaceId) });
 }

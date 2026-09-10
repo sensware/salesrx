@@ -5,13 +5,13 @@ import {
 } from "@/lib/watchlist";
 
 export async function GET(req: NextRequest) {
-  const ctx = await getCtx(req);
+  const ctx = await getCtx();
   if (!ctx) return unauthorized();
   return NextResponse.json({ watchlist: await loadWatchlist(ctx.workspaceId) });
 }
 
 export async function POST(req: NextRequest) {
-  const ctx = await getCtx(req);
+  const ctx = await getCtx();
   if (!ctx) return unauthorized();
 
   let body: { name: string; domain?: string; knownSignals?: string[] };
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const ctx = await getCtx(req);
+  const ctx = await getCtx();
   if (!ctx) return unauthorized();
   const id = req.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id is required" }, { status: 400 });

@@ -6,7 +6,7 @@ import { getCtx, unauthorized } from "@/lib/auth";
 import type { CoachingTip, RepProfile } from "@/lib/types";
 
 export async function POST(req: NextRequest) {
-  const ctx = await getCtx(req);
+  const ctx = await getCtx();
   if (!ctx) return unauthorized();
 
   let profile: RepProfile;

@@ -4,13 +4,13 @@ import { getCtx, unauthorized } from "@/lib/auth";
 import type { RepProfile } from "@/lib/types";
 
 export async function GET(req: NextRequest) {
-  const ctx = await getCtx(req);
+  const ctx = await getCtx();
   if (!ctx) return unauthorized();
   return NextResponse.json({ profile: await loadProfile(ctx.userId) });
 }
 
 export async function POST(req: NextRequest) {
-  const ctx = await getCtx(req);
+  const ctx = await getCtx();
   if (!ctx) return unauthorized();
   let profile: RepProfile;
   try {

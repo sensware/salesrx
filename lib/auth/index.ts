@@ -1,12 +1,16 @@
 /**
  * v2.0 auth — only active in Postgres mode. Without DATABASE_URL the app runs
  * in single-user "local" mode with no login, exactly like v1.x.
+ *
+ * Built on Auth.js (next-auth) — see ./config.ts for the provider/session
+ * setup and ./rate-limit.ts for login lockout.
  */
-import { NextRequest, NextResponse } from "next/server";
-import { SignJWT, jwtVerify } from "jose";
+import { randomUUID, randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
-import { createHash, randomUUID, randomBytes } from "crypto";
-import { db, pgEnabled } from "./db";
+import { NextResponse } from "next/server";
+import { db, pgEnabled } from "../db";
+import { auth, handlers, signIn, signOut } from "./config";
+import { checkRegisterLocked, recordRegisterAttempt } from "./rate-limit";
 
 export interface Ctx {
   userId: string;
@@ -16,54 +20,39 @@ export interface Ctx {
   role?: string;
 }
 
-const COOKIE = "salesrx_session";
-
-function secret(): Uint8Array {
-  const s =
-    process.env.AUTH_SECRET ||
-    createHash("sha256").update(`salesrx:${process.env.DATABASE_URL || "local"}`).digest("hex");
-  if (!process.env.AUTH_SECRET && pgEnabled()) {
-    console.warn("AUTH_SECRET not set — using a derived secret. Set AUTH_SECRET in production.");
-  }
-  return new TextEncoder().encode(s);
-}
-
-export async function issueSession(res: NextResponse, ctx: Ctx): Promise<void> {
-  const token = await new SignJWT({ ...ctx })
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("30d")
-    .sign(secret());
-  res.cookies.set(COOKIE, token, {
-    httpOnly: true, sameSite: "lax", path: "/",
-    maxAge: 60 * 60 * 24 * 30,
-  });
-}
-
-export function clearSession(res: NextResponse): void {
-  res.cookies.set(COOKIE, "", { httpOnly: true, path: "/", maxAge: 0 });
-}
+export { auth, handlers, signIn, signOut };
+export { RateLimitedError } from "./config";
+export { checkRegisterLocked, recordRegisterAttempt } from "./rate-limit";
 
 /** Resolve the request context. Local mode always succeeds; pg mode requires a session. */
-export async function getCtx(req: NextRequest): Promise<Ctx | null> {
+export async function getCtx(): Promise<Ctx | null> {
   if (!pgEnabled()) return { userId: "local", workspaceId: "local" };
-  const token = req.cookies.get(COOKIE)?.value;
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, secret());
-    return {
-      userId: payload.userId as string,
-      workspaceId: payload.workspaceId as string,
-      email: payload.email as string | undefined,
-      name: payload.name as string | undefined,
-      role: payload.role as string | undefined,
-    };
-  } catch {
-    return null;
-  }
+  const session = await auth();
+  if (!session?.user) return null;
+  return {
+    userId: session.user.id!,
+    workspaceId: session.user.workspaceId,
+    email: session.user.email ?? undefined,
+    name: session.user.name ?? undefined,
+    role: session.user.role,
+  };
 }
 
 export function unauthorized(): NextResponse {
   return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+}
+
+/** Build a Ctx from the users table by email. Used right after sign-in, when the
+ *  freshly-set session cookie isn't yet visible to `auth()` in the same request. */
+export async function ctxByEmail(email: string): Promise<Ctx | null> {
+  const p = await db();
+  const r = await p.query(
+    "SELECT id, email, name, workspace_id, role FROM users WHERE email=$1",
+    [email.toLowerCase().trim()]
+  );
+  const u = r.rows[0];
+  if (!u) return null;
+  return { userId: u.id, workspaceId: u.workspace_id, email: u.email, name: u.name, role: u.role };
 }
 
 // ── user & workspace operations (pg mode only) ──
@@ -99,19 +88,6 @@ export async function registerUser(input: {
     [userId, email, input.name.trim(), hash, workspaceId, role]
   );
   return { userId, workspaceId, email, name: input.name.trim(), role };
-}
-
-export async function loginUser(email: string, password: string): Promise<Ctx> {
-  const p = await db();
-  const r = await p.query(
-    "SELECT id, email, name, password_hash, workspace_id, role FROM users WHERE email=$1",
-    [email.toLowerCase().trim()]
-  );
-  if (!r.rows.length) throw new Error("Invalid email or password");
-  const u = r.rows[0];
-  const ok = await bcrypt.compare(password, u.password_hash);
-  if (!ok) throw new Error("Invalid email or password");
-  return { userId: u.id, workspaceId: u.workspace_id, email: u.email, name: u.name, role: u.role };
 }
 
 export async function workspaceInfo(workspaceId: string) {

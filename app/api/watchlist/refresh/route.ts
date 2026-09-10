@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
     /* empty body = refresh all */
   }
 
-  const ctx = await getCtx(req);
+  const ctx = await getCtx();
   if (ctx) {
     const items = await loadWatchlist(ctx.workspaceId);
     const newAlerts = await refreshItems(items, onlyId);

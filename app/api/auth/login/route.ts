@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pgEnabled } from "@/lib/db";
-import { loginUser, issueSession } from "@/lib/auth";
+import { AuthError } from "next-auth";
+import { signIn, ctxByEmail, RateLimitedError } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   if (!pgEnabled()) {
@@ -8,11 +9,18 @@ export async function POST(req: NextRequest) {
   }
   try {
     const { email, password } = await req.json();
-    const ctx = await loginUser(email, password);
-    const res = NextResponse.json({ user: ctx });
-    await issueSession(res, ctx);
-    return res;
+    await signIn("credentials", { email, password, redirect: false });
+    return NextResponse.json({ user: await ctxByEmail(email) });
   } catch (err: unknown) {
+    if (err instanceof RateLimitedError) {
+      return NextResponse.json(
+        { error: "Too many failed attempts — try again in a few minutes" },
+        { status: 429 }
+      );
+    }
+    if (err instanceof AuthError) {
+      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
+    }
     const message = err instanceof Error ? err.message : "Login failed";
     return NextResponse.json({ error: message }, { status: 401 });
   }
