@@ -54,6 +54,12 @@ CREATE TABLE IF NOT EXISTS usage_meter (
   key text PRIMARY KEY,
   data jsonb NOT NULL
 );
+CREATE TABLE IF NOT EXISTS login_attempts (
+  identifier text PRIMARY KEY,
+  failed_count int NOT NULL DEFAULT 0,
+  locked_until timestamptz,
+  last_attempt_at timestamptz DEFAULT now()
+);
 `;
 
 export async function db(): Promise<Pool> {

@@ -7,7 +7,7 @@ import type { ProspectInput, RepProfile } from "@/lib/types";
 export const maxDuration = 300; // research can take a while
 
 export async function POST(req: NextRequest) {
-  const ctx = await getCtx(req);
+  const ctx = await getCtx();
   if (!ctx) return unauthorized();
 
   let body: { profile: RepProfile; prospect: ProspectInput };

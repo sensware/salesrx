@@ -11,7 +11,7 @@ export const maxDuration = 120;
 
 /** v2.3 — generate a word-for-word NEPQ call script from a live brief. */
 export async function POST(req: NextRequest) {
-  const ctx = await getCtx(req);
+  const ctx = await getCtx();
   if (!ctx) return unauthorized();
 
   let body: { profile: RepProfile; brief: Brief; meetingType?: MeetingType; domain?: string };
